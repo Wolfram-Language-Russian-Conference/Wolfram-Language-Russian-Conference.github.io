@@ -1,26 +1,26 @@
-- title: Name
-  name: Name-1
-  subtitle: Position
-  img: TBD.jpg
-  thumbnail: TBD.jpg
-  alt: Picture of TBD
-  topic: Topic
-  description: More Info
+- title: Кирилл Белов
+  name: Kirill-Belov
+  subtitle: Редактор Поддержки
+  img: kirill-belov.jpg
+  thumbnail: kirill-belov.jpg
+  alt: Кирилл Белов
+  topic: Разработка расширяемого TCP сервера на Wolfram Language
+  description: Разработка расширяемого TCP сервера на Wolfram Language
 
-- title: Name
-  name: Name-2
-  subtitle: Position
-  img: TBD.jpg
-  thumbnail: TBD.jpg
-  alt: Picture of TBD
-  topic: Topic
-  description: More Info
+- title: Пётр Тенишев
+  name: Petr-Tenishev
+  subtitle: Администратор Поддержки
+  img: petr-tenishev.jpg
+  thumbnail: petr-tenishev.jpg
+  alt: Пётр Тенишев
+  topic: Че-то там про корабли и корпус
+  description: Че-то там про корабли и корпус
 
-- title: Name
-  name: Name-3
-  subtitle: Position
-  img: TBD.jpg
-  thumbnail: TBD.jpg
-  alt: Picture of TBD
-  topic: Topic
-  description: More Info
+- title: Кирилл Васин
+  name: Kirill-Vasin
+  subtitle: Аспирант и веб-разработчик
+  img: kirill-vasin.jpg
+  thumbnail: kirill-vasin.jpg
+  alt: Кирилл Васин
+  topic: Бесплатный вротэнд для Wolfram Engine на жабаскрип
+  description: Бесплатный вротэнд для Wolfram Engine на жабаскрип
