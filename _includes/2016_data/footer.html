@@ -47,16 +47,35 @@ footer {
         global: global,
     }
     
+    //credits https://bost.ocks.org/mike/shuffle/
+    function shuffle(array) {
+        
+        let currentIndex = array.length,  randomIndex;
 
+        // While there remain elements to shuffle.
+        while (currentIndex != 0) {
+        
+          // Pick a remaining element.
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+        
+          // And swap it with the current element.
+          [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+        }
+    
+        return array;
+    }
 
     const introText = document.getElementsByClassName("intro-heading")[0];
     const introSubText = document.getElementsByClassName("intro-lead-in")[0];
     const button = document.getElementsByClassName('btn-xl')[0];
 
     const lines = ['List'];
+    const scolors = shuffle(colors);
     logo.forEach((el, i)=>{
         let ob =  new ObjectStorage('curve-'+i); ob.cached = true; ob.cache = el;
-        lines.push(colors[i]);
+        lines.push(scolors[i]);
         lines.push(["Line",["FrontEndRef","'curve-"+i+"'"]]);
     });
 
@@ -71,7 +90,7 @@ footer {
     interpretate(["Graphics",lines,["Rule", "TransitionDuration", 1500],["Rule","PlotRange",["List",["List",2.147179628174854,1.8977957779174444e3],["List",-1.2351846164082956e3,-1.4848992690133628e1]]],["Rule","ViewBox",["List",-200,0,900,320]]], env);
     setTimeout(()=>{
 
-        interpretate(updateFunction(piter));
+        interpretate(updateFunction(shuffle(piter)));
 
 
         introSubText.style.opacity = 1;
@@ -93,11 +112,13 @@ footer {
 
     function repeat() {
         if (state) {
-
-            interpretate(updateFunction(piter));
+            const a = shuffle(piter);
+           
+            interpretate(updateFunction(a));
         } else {
-   
-            interpretate(updateFunction(logo));
+            const a = shuffle(logo);
+            
+            interpretate(updateFunction(a));
         }
 
         state = !state;
