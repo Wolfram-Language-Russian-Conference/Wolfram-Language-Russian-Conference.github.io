@@ -4,11 +4,11 @@
   img: kirill-belov.jpg
   thumbnail: kirill-belov.jpg
   alt: Кирилл Белов
-  topic: Разработка расширяемого TCP сервера на Wolfram Language без TLS и SMS
-  description: Разработка расширяемого TCP сервера на Wolfram Language
+  topic: TCP сервер на Wolfram Language
+  description: Разработка расширяемого TCP сервера на Wolfram Language без TLS и SMS
 
 - title: Пётр Тенишев
-  name: Petr-Tenishev
+  name: Petr-Tenishevы
   subtitle: Администратор Поддержки
   img: petr-tenishev.jpg
   thumbnail: petr-tenishev.jpg
