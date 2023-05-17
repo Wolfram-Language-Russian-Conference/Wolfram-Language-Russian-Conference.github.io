@@ -340,6 +340,10 @@ fieldset[disabled] .btn-xl.active {
 	margin-top: 2vh; 
 }
 
+.page-scroll {
+    transition: opacity 0.3s linear 2s;
+}
+
 header {
     height: 100vh;
     text-align: center;
@@ -358,6 +362,8 @@ header .intro-text {
     margin-top: 22vh;
     padding-bottom: 50px;
     color: rgb(187, 42, 27);
+    transition: opacity 0.3s linear 1s;
+    
 }
 
 header .intro-text .intro-lead-in {
@@ -367,6 +373,7 @@ header .intro-text .intro-lead-in {
     margin-top: 22px;
     margin-bottom: 30px;
     color: rgb(89, 89, 89);
+    transition: opacity 0.3s linear 2s;
 }
 
 header .intro-text .intro-heading {
@@ -376,6 +383,8 @@ header .intro-text .intro-heading {
     font-size: 40px;
     font-weight: 700;
     line-height: 40px;
+    opacity: 0;
+    transition: opacity 0.3s linear 1s;
 }
 
 @media(min-width:768px) {    
@@ -390,6 +399,7 @@ header .intro-text .intro-heading {
         line-height: 49px;
         margin-top: 22px;
         margin-bottom: 30px;
+        opacity: 0;
     }
 
     header .intro-text .intro-heading {
@@ -399,6 +409,7 @@ header .intro-text .intro-heading {
         font-size: 46px;
         font-weight: 700;
         line-height: 48px;
+        opacity: 0;
     }
 }
 

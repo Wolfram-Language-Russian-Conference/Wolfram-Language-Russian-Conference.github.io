@@ -46,10 +46,42 @@ footer {
         local: local,
         global: global,
     }
+    
+
+
+    const introText = document.getElementsByClassName("intro-heading")[0];
+    const introSubText = document.getElementsByClassName("intro-lead-in")[0];
+    const button = document.getElementsByClassName('btn-xl')[0];
 
     let ob =  new ObjectStorage('curve'); ob.cached = true; ob.cache = logo;
     interpretate(["Graphics",["Line",["FrontEndRef","'curve'"]],["Rule", "TransitionDuration", 1500],["Rule","PlotRange",["List",["List",2.147179628174854,1.8977957779174444e3],["List",-1.2351846164082956e3,-1.4848992690133628e1]]],["Rule","ViewBox",["List",-200,0,900,320]]], env);
     setTimeout(()=>{
         interpretate(animateToPiter, {});
-    }, 1000);
+        introSubText.style.opacity = 1;
+        button.style.opacity = 1;
+
+        setInterval(repeat, 6000);
+    }, 1500);
+
+    setTimeout(()=>{
+        introSubText.style.opacity = 1;
+        button.style.opacity = 1;
+    }, 100);    
+
+    introText.style.opacity = 1;
+
+    let state = false;
+
+    
+
+    function repeat() {
+        if (state) 
+            interpretate(animateToPiter);
+        else
+            interpretate(["SetFrontEndObject","'curve'", logo]);
+
+        state = !state;
+    }
+
+    
 </script>
