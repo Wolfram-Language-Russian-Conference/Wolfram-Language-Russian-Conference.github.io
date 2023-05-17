@@ -31,5 +31,32 @@
   img: anton-antonov.jpg
   thumbnail: anton-antonov.jpg
   alt: Антон Антонов
-  topic: От эпидемиологической модели к модели войн
-  description: От эпидемиологической модели к модели войн
+  topic: Динамические системы и расширение эпидемиологической модели
+  description: Динамические системы и расширение эпидемиологической модели
+
+- title: Василий Никитин
+  name: Vasiliy-Nikitin
+  subtitle: Кандидат наук, Преподаватель СамГУ
+  img: vasiliy-nikitin.jpg
+  thumbnail: vasiliy-nikitin.jpg
+  alt: Василий Никитин
+  topic: Решение задач гидромеханики в бурении с применением авторских программ, написанных на языке WOLFRAM LANGUAGE
+  description: 1. Перспективы применения пакета wolfram mathematica в образовательном процессе СамГТУ. </br>2. Решение задач гидромеханики в бурении с применением авторских программ, написанных на языке WOLFRAM LANGUAGE.
+
+- title: Илья Марчевский
+  name: Ilia-Marchevskiy
+  subtitle: Доктор наук, Преподаватель МФТИ
+  img: ilia-marchevskiy.jpg
+  thumbnail: ilia-marchevskiy.jpg
+  alt: Илья Марчевский
+  topic: Wolfram Mathematica как инструмент в математическом моделировании и в обучении по специальности Прикладная математика
+  description: Wolfram Mathematica как инструмент в математическом моделировании и в обучении по специальности Прикладная математика
+
+- title: Екатерина Серебровская
+  name: Ekaterina-Serebrovskaya
+  subtitle: Студентка МФТИ
+  img: ekaterina-serebrovskaya.jpg
+  thumbnail: ekaterina-serebrovskaya.jpg
+  alt: Екатерина Серебровская
+  topic: Реализация алгоритма поиска кратчайшего пути на триангулированной поверхности
+  description: Реализация алгоритма поиска кратчайшего пути на триангулированной поверхности
