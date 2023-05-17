@@ -30,3 +30,22 @@ footer {
         </div>
     </div>
 </footer>
+<script src="https://cdn.jsdelivr.net/gh/JerryI/wljs-interpreter@main/src/interpreter.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/JerryI/wljs-interpreter@main/src/core.js"></script>
+
+<script src="json/curves.js"></script>
+
+<script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-graphics-d3@main/dist/kernel.js">
+</script>
+
+<script type="module">
+        let local = {};
+    let global = {};
+    let env = {
+        element: document.getElementById("background-svg"),
+        local: local,
+        global: global,
+    }
+
+    interpretate(drawPiter, env);
+</script>
