@@ -39,7 +39,7 @@ footer {
 </script>
 
 <script type="module">
-        let local = {};
+    let local = {};
     let global = {};
     let env = {
         element: document.getElementById("background-svg"),
@@ -47,5 +47,9 @@ footer {
         global: global,
     }
 
-    interpretate(drawPiter, env);
+    let ob =  new ObjectStorage('curve'); ob.cached = true; ob.cache = logo;
+    interpretate(["Graphics",["Line",["FrontEndRef","'curve'"]],["Rule", "TransitionDuration", 1500],["Rule","PlotRange",["List",["List",2.147179628174854,1.8977957779174444e3],["List",-1.2351846164082956e3,-1.4848992690133628e1]]],["Rule","ViewBox",["List",-200,0,900,320]]], env);
+    setTimeout(()=>{
+        interpretate(animateToPiter, {});
+    }, 1000);
 </script>
