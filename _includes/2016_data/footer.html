@@ -35,7 +35,7 @@ footer {
 
 <script src="json/curves.js"></script>
 
-<script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-graphics-d3@main/dist/kernel.js">
+<script type="module" src="https://cdn.statically.io/gh/JerryI/wljs-graphics-d3/main/dist/kernel.js">
 </script>
 
 <script type="module">
@@ -68,7 +68,7 @@ footer {
         return list        
     }
     
-    interpretate(["Graphics",lines,["Rule", "TransitionDuration", 0],["Rule","PlotRange",["List",["List",2.147179628174854,1.8977957779174444e3],["List",-1.2351846164082956e3,-1.4848992690133628e1]]],["Rule","ViewBox",["List",-200,0,900,320]]], env);
+    interpretate(["Graphics",lines,["Rule", "TransitionDuration", 1500],["Rule","PlotRange",["List",["List",2.147179628174854,1.8977957779174444e3],["List",-1.2351846164082956e3,-1.4848992690133628e1]]],["Rule","ViewBox",["List",-200,0,900,320]]], env);
     setTimeout(()=>{
 
         interpretate(updateFunction(piter));
@@ -83,7 +83,7 @@ footer {
     setTimeout(()=>{
         introSubText.style.opacity = 1;
         button.style.opacity = 1;
-    }, 100);    
+    }, 400);    
 
     introText.style.opacity = 1;
 
