@@ -1,35 +1,35 @@
 - inverted: 
   img: icon-about.jpeg
-  name: Theme, Vision, Mission
-  info: Read more about our Theme, Vision, and Mission
+  name: Миссия
+  info: История конференции, как и когда возникла, что поджидало нас на пути
   link: /about
 
 - inverted: timeline-inverted
   img: icon-agenda.jpeg
-  name: Agenda
+  name: Повестка
   info: Check out the agenda
   link: /agenda
 
 - inverted: 
   img: icon-team.jpeg
-  name: Team
-  info: Find out the team members
+  name: Организаторы
+  info: Немного слов про организаторов конференции
   link: /team
 
 - inverted: timeline-inverted
   img: icon-venue.jpeg
-  name: Venue
-  info: Learn more about our location
+  name: Место проведения
+  info: Конференция проходит в СПБГМТУ
   link: /venue
 
 - inverted: 
   img: icon-faq.jpeg
-  name: FAQs
-  info: Have a Question? Many answers can be found right here in our FAQs
+  name: Часто задаваемые вопросы
+  info: Ответы на часто задаваемые вопросы
   link: /faqs
 
 - inverted: timeline-inverted
   img: booklet-icon.png
-  name: Event Booklet
-  info: View or Download our event booklet
+  name: Программа конференции
+  info: Программа мероприятия
   link: /booklet
