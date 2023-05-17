@@ -4,7 +4,7 @@
   img: kirill-belov.jpg
   thumbnail: kirill-belov.jpg
   alt: Кирилл Белов
-  topic: TCP на Wolfram Language
+  topic: TCP сервер на Wolfram Language
   description: Разработка расширяемого TCP сервера на Wolfram Language без TLS и SMS
 
 - title: Пётр Тенишев
