@@ -1,4 +1,7 @@
 # Конференция по Wolfram Language в России
+
+Сайт: [https://Wolfram-Language-Russian-Conference.github.io](https://Wolfram-Language-Russian-Conference.github.io)
+
 Ежегодное (как я надеюсь) событие, которое проходит в России. На конференции участники делятся своим опытом по использованию Wolfram Language в своей работе. 
 
 ## История возникновения
