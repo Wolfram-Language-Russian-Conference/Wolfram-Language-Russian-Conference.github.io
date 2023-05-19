@@ -80,10 +80,10 @@
   description: Реализация алгоритма поиска кратчайшего пути на триангулированной поверхности
 
 - title: Николай Мурзин
-  name: Anton-Ekimenko
-  subtitle: Сейсморазведчик
-  img: anton-ekimenko.jpg
-  thumbnail: anton-ekimenko.jpg
-  alt: Антон Екименко
-  topic: Реализация алгоритма поиска кратчайшего пути на триангулированной поверхности
-  description: Реализация алгоритма поиска кратчайшего пути на триангулированной поверхности
+  name: Nikolay-Murzin
+  subtitle: Сотрубник Wolfram Institute
+  img: nikolay-murzin.jpg
+  thumbnail: nikolay-murzin.jpg
+  alt: Николай Мурзин
+  topic: LLM модели, новое API в языке Wolfram и prompt repository
+  description: LLM модели, новое API в языке Wolfram и prompt repository
