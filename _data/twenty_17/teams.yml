@@ -1,26 +1,17 @@
-- title: Name
-  name: Name-1
-  subtitle: Position
-  img: TBD.jpg
-  thumbnail: TBD.jpg
-  alt: Picture of TBD
-  topic: Topic
-  description: More Info
+- title: Пётр Тенишев
+  name: Petr-Tenishev
+  subtitle: Администратор
+  img: petr-tenishev.jpg
+  thumbnail: petr-tenishev.jpg
+  alt: Пётр Тенишев
+  topic: Администратор
+  description: Администратор группы Русскоязычной Поддержки Wolfram Mathematica в VK
 
-- title: Name
-  name: Name-2
-  subtitle: Position
-  img: TBD.jpg
-  thumbnail: TBD.jpg
-  alt: Picture of TBD
-  topic: Topic
-  description: More Info
-
-- title: Name
-  name: Name-3
-  subtitle: Position
-  img: TBD.jpg
-  thumbnail: TBD.jpg
-  alt: Picture of TBD
-  topic: Topic
-  description: More Info
+- title: Кирилл Белов
+  name: Kirill-Belov
+  subtitle: Редактор
+  img: kirill-belov.jpg
+  thumbnail: kirill-belov.jpg
+  alt: Кирилл Белов
+  topic: Редактор
+  description: Редактор группы Русскоязычной Поддержки Wolfram Mathematica в VK

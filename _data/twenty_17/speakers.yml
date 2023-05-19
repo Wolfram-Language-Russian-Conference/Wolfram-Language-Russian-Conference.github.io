@@ -4,11 +4,11 @@
   img: kirill-belov.jpg
   thumbnail: kirill-belov.jpg
   alt: Кирилл Белов
-  topic: Разработка расширяемого TCP сервера на Wolfram Language без TLS и SMS
-  description: Разработка расширяемого TCP сервера на Wolfram Language
+  topic: TCP сервер на Wolfram Language
+  description: Разработка расширяемого TCP сервера на Wolfram Language без TLS и SMS
 
 - title: Пётр Тенишев
-  name: Petr-Tenishev
+  name: Petr-Tenishevы
   subtitle: Администратор Поддержки
   img: petr-tenishev.jpg
   thumbnail: petr-tenishev.jpg
@@ -31,5 +31,113 @@
   img: anton-antonov.jpg
   thumbnail: anton-antonov.jpg
   alt: Антон Антонов
-  topic: От эпидемиологической модели к модели войн
-  description: От эпидемиологической модели к модели войн
+  topic: Динамические системы и расширение эпидемиологической модели
+  description: Динамические системы и расширение эпидемиологической модели
+
+- title: Василий Никитин
+  name: Vasiliy-Nikitin
+  subtitle: Кандидат наук, Преподаватель СамГУ
+  img: vasiliy-nikitin.jpg
+  thumbnail: vasiliy-nikitin.jpg
+  alt: Василий Никитин
+  topic: Решение задач гидромеханики в бурении с применением авторских программ, написанных на языке WOLFRAM LANGUAGE
+  description: 1. Перспективы применения пакета wolfram mathematica в образовательном процессе СамГТУ. </br>2. Решение задач гидромеханики в бурении с применением авторских программ, написанных на языке WOLFRAM LANGUAGE.
+
+- title: Илья Марчевский
+  name: Ilia-Marchevskiy
+  subtitle: Доктор наук, Преподаватель МГТУ им. Баумана
+  img: ilia-marchevskiy.jpg
+  thumbnail: ilia-marchevskiy.jpg
+  alt: Илья Марчевский
+  topic: Wolfram Mathematica как инструмент в математическом моделировании и в обучении по специальности Прикладная математика
+  description: Wolfram Mathematica как инструмент в математическом моделировании и в обучении по специальности Прикладная математика
+
+- title: Екатерина Серебровская
+  name: Ekaterina-Serebrovskaya
+  subtitle: Студентка МГТУ им. Баумана
+  img: ekaterina-serebrovskaya.jpg
+  thumbnail: ekaterina-serebrovskaya.jpg
+  alt: Екатерина Серебровская
+  topic: Реализация алгоритма поиска кратчайшего пути на триангулированной поверхности
+  description: Реализация алгоритма поиска кратчайшего пути на триангулированной поверхности
+
+- title: Николай Шилов
+  name: Nikolay-Shilov
+  subtitle: Аспирант НГУ
+  img: nikolay-shilov.jpg
+  thumbnail: nikolay-shilov.jpg
+  alt: Николай Шилов
+  topic: Миграционный скоростной анализ по уравнению двойного корня в высокочастотной асимптотике
+  description: Миграционный скоростной анализ по уравнению двойного корня в высокочастотной асимптотике
+
+- title: Антон Екименко
+  name: Anton-Ekimenko
+  subtitle: Сейсморазведчик
+  img: anton-ekimenko.jpg
+  thumbnail: anton-ekimenko.jpg
+  alt: Антон Екименко
+  topic: Возможность картирования ловушек УВ по сети сейсмических профилей
+  description: Ловушки нефти и газа чаще всего представляют собой локальные поднятия палеорельефа. Поиск таких поднятий - основная задача разведочной геофизики. Если наблюдения выполнены по сети профилей, то оценка размеров таких поднятий зависит от направления, азимута, плотности этой сети профилей. В работе многократно моделируются сети профилей с разными параметрами, наблюдения интерполируются, выполняется оценка площади ловушки.  Погрешность оценки площади показывает насколько корректно ловушка будет описана по сети профилей.
+
+- title: Гарник Абгарян
+  name: Garnik-Abgaryan
+  subtitle: Ассистент КФУ
+  img: garnik-abgaryan.jpg
+  thumbnail: garnik-abgaryan.jpg
+  alt: Гарник Абгарян
+  topic: Использование Wolfram Language в решении дифракционных задач
+  description: Использование Wolfram Language в решении дифракционных задач
+
+- title: Роман Аверьянов
+  name: Roman-Averianov
+  subtitle: Инженер по прочности МФТИ
+  img: roman-averianov.jpg
+  thumbnail: roman-averianov.jpg
+  alt: Роман Аверьянов
+  topic: Способы структурирования кода в Mathematica
+  description: Способы структурирования кода в Mathematica
+
+- title: Тимофей Ломоносов
+  name: Timofey-Lomonosov
+  subtitle: Инженер по прочности МФТИ
+  img: timofey-lomonosov.jpg
+  thumbnail: timofey-lomonosov.jpg
+  alt: Тимофей Ломоносов
+  topic: Использование Wolfram Language для линеаризации систем квазилинейных уравнений в частных производных
+  description: Использование Wolfram Language для линеаризации систем квазилинейных уравнений в частных производных
+
+- title: Тигран Ишханян
+  name: Tigran-Ishkhanyan
+  subtitle: Разработчик Wolrfam Research
+  img: tigran-ishkhanyan.jpg
+  thumbnail: tigran-ishkhanyan.jpg
+  alt: Тигран Ишханян
+  topic: Новые возможности Wolfram Language. дробное дифференцирование
+  description: Новые возможности Wolfram Language. дробное дифференцирование
+
+- title: Николай Мурзин
+  name: Nikolay-Murzin
+  subtitle: Сотрудник Wolfram Institute
+  img: nikolay-murzin.jpg
+  thumbnail: nikolay-murzin.jpg
+  alt: Николай Мурзин
+  topic: LLM модели, новое API в языке Wolfram и prompt repository
+  description: LLM модели, новое API в языке Wolfram и prompt repository
+
+- title: Владимир Гуськов
+  name: Vladimir-Guskov
+  subtitle: Аспирант ГУМРФ им. адм. С.О. Макарова
+  img: vladimir-guskov.jpg
+  thumbnail: vladimir-guskov.jpg
+  alt: Владимир Гуськов
+  topic: Сравнительный анализ широтно-импульсной модуляции
+  description: Сравнительный анализ широтно-импульсной модуляции
+
+- title: Дмитрий Каменко
+  name: Dmitriy-Kamenko
+  subtitle: студент БНТУ
+  img: dmitriy-kamenko.jpg
+  thumbnail: dmitriy-kamenko.jpg
+  alt: Дмитрий Каменко
+  topic: Исследования аномальных значений выборки в Wolfram Mathematica
+  description: Исследования аномальных значений выборки в Wolfram Mathematica

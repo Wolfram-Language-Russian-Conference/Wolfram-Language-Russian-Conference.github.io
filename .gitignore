@@ -1,3 +1,7 @@
 _site/
 .sass-cache/
 .jekyll-metadata
+Gemfile
+Gemfile.lock
+.DS_Store
+wljs-graphics-d3
