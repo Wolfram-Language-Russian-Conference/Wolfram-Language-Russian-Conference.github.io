@@ -121,8 +121,8 @@
   img: nikolay-murzin.jpg
   thumbnail: nikolay-murzin.jpg
   alt: Николай Мурзин
-  topic: LLM модели, новое API в языке Wolfram и prompt repository
-  description: LLM модели, новое API в языке Wolfram и prompt repository
+  topic: Обзор грядущих возможностей в 13.3. LLMFunction, ChatBook, Promp Repository и др.
+  description: Интеграция больших язоковых моделей в ноутбуки, создание функций шаблонов на основе естественного языка, генерация и дебагинг кода
 
 - title: Владимир Гуськов
   name: Vladimir-Guskov
