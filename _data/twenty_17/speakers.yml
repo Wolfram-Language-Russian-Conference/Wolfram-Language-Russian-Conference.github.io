@@ -79,15 +79,6 @@
   topic: Возможность картирования ловушек УВ по сети сейсмических профилей
   description: Возможность картирования ловушек УВ по сети сейсмических профилей
 
-- title: Николай Мурзин
-  name: Nikolay-Murzin
-  subtitle: Сотрудник Wolfram Institute
-  img: nikolay-murzin.jpg
-  thumbnail: nikolay-murzin.jpg
-  alt: Николай Мурзин
-  topic: LLM модели, новое API в языке Wolfram и prompt repository
-  description: LLM модели, новое API в языке Wolfram и prompt repository
-
 - title: Гарник Абгарян
   name: Garnik-Abgaryan
   subtitle: Ассистент КФУ
@@ -96,24 +87,6 @@
   alt: Гарник Абгарян
   topic: Использование Wolfram Language в решении дифракционных задач
   description: Использование Wolfram Language в решении дифракционных задач
-
-- title: Дмитрий Каменко
-  name: Dmitriy-Kamenko
-  subtitle: студент БНТУ
-  img: dmitriy-kamenko.jpg
-  thumbnail: dmitriy-kamenko.jpg
-  alt: Дмитрий Каменко
-  topic: Исследования аномальных значений выборки в Wolfram Mathematica
-  description: Исследования аномальных значений выборки в Wolfram Mathematica
-
-- title: Владимир Гуськов
-  name: Vladimir-Guskov
-  subtitle: Аспирант ГУМРФ им. адм. С.О. Макарова
-  img: vladimir-guskov.jpg
-  thumbnail: vladimir-guskov.jpg
-  alt: Владимир Гуськов
-  topic: Сравнительный анализ широтно-импульсной модуляции
-  description: Сравнительный анализ широтно-импульсной модуляции
 
 - title: Роман Аверьянов
   name: Roman-Averianov
@@ -141,3 +114,30 @@
   alt: Тигран Ишханян
   topic: Новые возможности Wolfram Language. дробное дифференцирование
   description: Новые возможности Wolfram Language. дробное дифференцирование
+
+- title: Николай Мурзин
+  name: Nikolay-Murzin
+  subtitle: Сотрудник Wolfram Institute
+  img: nikolay-murzin.jpg
+  thumbnail: nikolay-murzin.jpg
+  alt: Николай Мурзин
+  topic: LLM модели, новое API в языке Wolfram и prompt repository
+  description: LLM модели, новое API в языке Wolfram и prompt repository
+
+- title: Владимир Гуськов
+  name: Vladimir-Guskov
+  subtitle: Аспирант ГУМРФ им. адм. С.О. Макарова
+  img: vladimir-guskov.jpg
+  thumbnail: vladimir-guskov.jpg
+  alt: Владимир Гуськов
+  topic: Сравнительный анализ широтно-импульсной модуляции
+  description: Сравнительный анализ широтно-импульсной модуляции
+
+- title: Дмитрий Каменко
+  name: Dmitriy-Kamenko
+  subtitle: студент БНТУ
+  img: dmitriy-kamenko.jpg
+  thumbnail: dmitriy-kamenko.jpg
+  alt: Дмитрий Каменко
+  topic: Исследования аномальных значений выборки в Wolfram Mathematica
+  description: Исследования аномальных значений выборки в Wolfram Mathematica
