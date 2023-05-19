@@ -87,3 +87,57 @@
   alt: Николай Мурзин
   topic: LLM модели, новое API в языке Wolfram и prompt repository
   description: LLM модели, новое API в языке Wolfram и prompt repository
+
+- title: Гарник Абгарян
+  name: Garnik-Abgaryan
+  subtitle: Ассистент КФУ
+  img: garnik-abgaryan.jpg
+  thumbnail: garnik-abgaryan.jpg
+  alt: Гарник Абгарян
+  topic: Использование Wolfram Language в решении дифракционных задач
+  description: Использование Wolfram Language в решении дифракционных задач
+
+- title: Дмитрий Каменко
+  name: Dmitriy-Kamenko
+  subtitle: студент БНТУ
+  img: dmitriy-kamenko.jpg
+  thumbnail: dmitriy-kamenko.jpg
+  alt: Дмитрий Каменко
+  topic: Исследования аномальных значений выборки в Wolfram Mathematica
+  description: Исследования аномальных значений выборки в Wolfram Mathematica
+
+- title: Владимир Гуськов
+  name: Vladimir-Guskov
+  subtitle: Аспирант ГУМРФ им. адм. С.О. Макарова
+  img: vladimir-guskov.jpg
+  thumbnail: vladimir-guskov.jpg
+  alt: Владимир Гуськов
+  topic: Сравнительный анализ широтно-импульсной модуляции
+  description: Сравнительный анализ широтно-импульсной модуляции
+
+- title: Роман Аверьянов
+  name: Roman-Averianov
+  subtitle: Инженер по прочности МФТИ
+  img: roman-averianov.jpg
+  thumbnail: roman-averianov.jpg
+  alt: Роман Аверьянов
+  topic: Способы структурирования кода в Mathematica
+  description: Способы структурирования кода в Mathematica
+
+- title: Тимофей Ломоносов
+  name: Timofey-Lomonosov
+  subtitle: Инженер по прочности МФТИ
+  img: timofey-lomonosov.jpg
+  thumbnail: timofey-lomonosov.jpg
+  alt: Тимофей Ломоносов
+  topic: Использование Wolfram Language для линеаризации систем квазилинейных уравнений в частных производных
+  description: Использование Wolfram Language для линеаризации систем квазилинейных уравнений в частных производных
+
+- title: Тигран Ишханян
+  name: Tigran-Ishkhanyan
+  subtitle: Разработчик Wolrfam Research
+  img: tigran-ishkhanyan.jpg
+  thumbnail: tigran-ishkhanyan.jpg
+  alt: Тигран Ишханян
+  topic: Новые возможности Wolfram Language. дробное дифференцирование
+  description: Новые возможности Wolfram Language. дробное дифференцирование
