@@ -67,7 +67,7 @@ footer {
         colors=RandomSample[WindowScope["colors"]];
             
         FrontEndVirtual[{AttachDOM["dom-canvas"];
-        Graphics[Table[{colors[[i]]//Evaluate,Line[logo[[i]]]},{i,1,Length[logo]}],"TransitionDuration"->1000,"ViewBox"->{-200,0,900,320},"PlotRange"->{{2.14718,1897.8},{-1235.18,-14.849}}]}];
+        Graphics[Table[{colors[[i]]//Evaluate,Line[logo[[i]]]},{i,1,Length[logo]}],"TransitionDuration"->1000,"ViewBox"->{-200,0,900,320},"PlotRange"->{ {2.14718,1897.8},{-1235.18,-14.849} } ] }];
             
         Pause[0.4];
         ShowIntro;
@@ -156,7 +156,7 @@ footer {
                                 [
                                     "Rule",
                                     "'TransitionDuration'",
-                                    1000
+                                    1500
                                 ],
                                 [
                                     "Rule",
