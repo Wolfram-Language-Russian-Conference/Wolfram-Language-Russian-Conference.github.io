@@ -12,106 +12,221 @@ footer {
   bottom: 0;
   left: 0;
 }
+
+.border-bottom {
+    border-bottom-color: rgb(222, 226, 230);
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+}
+
 </style>
 
-<footer>
-    <div class="container">
-    
-    </div>
-</footer>
-<script src="https://cdn.jsdelivr.net/gh/JerryI/wljs-interpreter@main/src/interpreter.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/JerryI/wljs-interpreter@main/src/core.js"></script>
+<div class="container">
+    <footer class="py-3 my-4">
+      <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+        <li class="nav-item" style="display: inline-block"><a href="https://github.com/Wolfram-Language-Russian-Conference/Wolfram-Language-Russian-Conference.github.io" class="nav-link px-2 text-muted">Github</a></li>
+        <li class="nav-item" style="display: inline-block"><a href="https://vk.com/wolframmathematica" class="nav-link px-2 text-muted">VK</a></li>
+      </ul>
+      <p class="text-center text-muted">Русскоязычная поддержка Wolfram Mathematica</p>
+    </footer>
+  </div>
+<script src="https://cdn.statically.io/gh/JerryI/wljs-interpreter/main/src/interpreter.js"></script>
+<script src="https://cdn.statically.io/gh/JerryI/wljs-interpreter/main/src/core.js"></script>
 
 <script src="json/curves.js"></script>
 
-<script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-graphics-d3@main/dist/kernel.js">
+<script type="module" src="https://cdn.statically.io/gh/JerryI/wljs-graphics-d3/main/dist/kernel.js">
 </script>
 
 <script type="module">
-    let local = {};
-    let global = {};
-    let env = {
-        element: document.getElementById("background-svg"),
-        local: local,
-        global: global,
-    }
+        let local = {};
+        let global = {};
+        let env = {
+            local: local,
+            global: global,
+        };
     
-    //credits https://bost.ocks.org/mike/shuffle/
-    function shuffle(array) {
+        const introText = document.getElementsByClassName("intro-heading")[0];
+        const introSubText = document.getElementsByClassName("intro-lead-in")[0];
+        const button = document.getElementsByClassName('btn-xl')[0];
+    
+        introText.style.opacity = 1;
+    
+        core.ShowTheRest = async (args, env) => {
         
-        let currentIndex = array.length,  randomIndex;
-
-        // While there remain elements to shuffle.
-        while (currentIndex != 0) {
-        
-          // Pick a remaining element.
-          randomIndex = Math.floor(Math.random() * currentIndex);
-          currentIndex--;
-        
-          // And swap it with the current element.
-          [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex], array[currentIndex]];
         }
     
-        return array;
-    }
-
-    const introText = document.getElementsByClassName("intro-heading")[0];
-    const introSubText = document.getElementsByClassName("intro-lead-in")[0];
-    const button = document.getElementsByClassName('btn-xl')[0];
-
-    const lines = ['List'];
-    const scolors = shuffle(colors);
-    logo.forEach((el, i)=>{
-        let ob =  new ObjectStorage('curve-'+i); ob.cached = true; ob.cache = el;
-        lines.push(scolors[i]);
-        lines.push(["Line",["FrontEndRef","'curve-"+i+"'"]]);
-    });
-
-    const updateFunction = (datum) => {
-        const list = ['List'];
-        datum.forEach((el, i)=>{
-            list.push(["SetFrontEndObject", "'curve-"+i+"'", el]);
-        });
-        return list        
-    }
-    
-    interpretate(["Graphics",lines,["Rule", "TransitionDuration", 1500],["Rule","PlotRange",["List",["List",2.147179628174854,1.8977957779174444e3],["List",-1.2351846164082956e3,-1.4848992690133628e1]]],["Rule","ViewBox",["List",-200,0,900,320]]], env);
-    setTimeout(()=>{
-
-        interpretate(updateFunction(shuffle(piter)));
-
-
-        introSubText.style.opacity = 1;
-        button.style.opacity = 1;
-
-        setInterval(repeat, 6000);
-    }, 1500);
-
-    setTimeout(()=>{
-        introSubText.style.opacity = 1;
-        button.style.opacity = 1;
-    }, 400);    
-
-    introText.style.opacity = 1;
-
-    let state = false;
-
-    
-
-    function repeat() {
-        if (state) {
-            const a = shuffle(piter);
-           
-            interpretate(updateFunction(a));
-        } else {
-            const a = shuffle(logo);
+        core.ShowIntro = async (args, env) => {
+            introSubText.style.opacity = 1;
+            button.style.opacity = 1;
+        }    
+ 
+        /*
+        Hold[logo=WindowScope["logo"];
+        piter=WindowScope["piter"];
+        colors=RandomSample[WindowScope["colors"]];
             
-            interpretate(updateFunction(a));
-        }
-
-        state = !state;
-    }
-
+        FrontEndVirtual[{AttachDOM["dom-canvas"];
+        Graphics[Table[{colors[[i]]//Evaluate,Line[logo[[i]]]},{i,1,Length[logo]}],"TransitionDuration"->1000,"ViewBox"->{-200,0,900,320},"PlotRange"->{ {2.14718,1897.8},{-1235.18,-14.849} } ] }];
+            
+        Pause[0.4];
+        ShowIntro;
+        Pause[1.1];
+        FlipSymbols[logo,piter,RandomSample];
+        ShowTheRest;
+            
+        While[True,Pause[6];
+        FlipSymbols[logo,piter,RandomSample];];];
+        */
+        
+        interpretate([
+        "FrontEndOnly",
+            [
+                "CompoundExpression",
+                [
+                    "Set",
+                    "logo",
+                    [
+                        "WindowScope",
+                        "'piter'"
+                    ]
+                ],
+                [
+                    "Set",
+                    "piter",
+                    [
+                        "WindowScope",
+                        "'logo'"
+                    ]
+                ],
+                [
+                    "Set",
+                    "colors",
+                    [
+                        "RandomSample",
+                        [
+                            "WindowScope",
+                            "'colors'"
+                        ]
+                    ]
+                ],
+                [
+                    "FrontEndVirtual",
+                    [
+                        "List",
+                        [
+                            "CompoundExpression",
+                            [
+                                "AttachDOM",
+                                "'background-svg'"
+                            ],
+                            [
+                                "Graphics",
+                                [
+                                    "Table",
+                                    [
+                                        "List",
+                                        [
+                                            "Evaluate",
+                                            [
+                                                "Part",
+                                                "colors",
+                                                "i"
+                                            ]
+                                        ],
+                                        [
+                                            "Line",
+                                            [
+                                                "Part",
+                                                "logo",
+                                                "i"
+                                            ]
+                                        ]
+                                    ],
+                                    [
+                                        "List",
+                                        "i",
+                                        1,
+                                        [
+                                            "Length",
+                                            "logo"
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    "Rule",
+                                    "'TransitionDuration'",
+                                    1500
+                                ],
+                                [
+                                    "Rule",
+                                    "'ViewBox'",
+                                    [
+                                        "List",
+                                        -200,
+                                        0,
+                                        900,
+                                        320
+                                    ]
+                                ],
+                                [
+                                    "Rule",
+                                    "'PlotRange'",
+                                    [
+                                        "List",
+                                        [
+                                            "List",
+                                            2.14718,
+                                            1.8978e3
+                                        ],
+                                        [
+                                            "List",
+                                            -1.23518e3,
+                                            -1.4849e1
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                [
+                    "Pause",
+                    0.4
+                ],
+                "ShowIntro",
+                [
+                    "Pause",
+                    1.1
+                ],
+                [
+                    "FlipSymbols",
+                    "logo",
+                    "piter",
+                    "RandomSample"
+                ],
+                "ShowTheRest",
+                [
+                    "While",
+                    true,
+                    [
+                        "CompoundExpression",
+                        [
+                            "Pause",
+                            6
+                        ],
+                        [
+                            "FlipSymbols",
+                            "logo",
+                            "piter",
+                            "RandomSample"
+                        ],
+                        null
+                    ]
+                ],
+                null
+            ]
+        ], env);    
+        
+    </script>
     
-</script>

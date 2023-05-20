@@ -1,8 +1,8 @@
-title: WOLFRAM LANGUAGE КОНФЕРЕНЦИЯ В РОССИИ
+title: "WOLFRAM LANGUAGE КОНФЕРЕНЦИЯ В РОССИИ"
 description: > # this means to ignore newlines until "baseurl:"
   Your description
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "Your-Link.github.io" # the base hostname & protocol for your site
+url: "https://wolfram-language-russian-conference.github.io" # the base hostname & protocol for your site
 # Build settings
 markdown: kramdown
 
@@ -23,10 +23,6 @@ plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
 
-# Social networks usernames (many more available: google-plus, flickr, dribbble, pinterest, instagram, tumblr, linkedin, etc.)
-social:
-  - title: vk
-    url: https://vk.com/wolframmathematica
 
 # Build settings
 markdown: kramdown
