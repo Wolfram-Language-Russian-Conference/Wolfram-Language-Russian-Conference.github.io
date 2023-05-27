@@ -18,12 +18,12 @@
 
 - title: Кирилл Васин
   name: Kirill-Vasin
-  subtitle: Аспирант и веб-разработчик
+  subtitle: Аспирант Аугсбургского университета
   img: kirill-vasin.jpg
   thumbnail: kirill-vasin.jpg
   alt: Кирилл Васин
-  topic: Бесплатный вротэнд для Wolfram Engine на жабаскрип
-  description: Бесплатный вротэнд для Wolfram Engine на жабаскрип
+  topic: Wolfram Language Javascript Frontend
+  description: Открытый и бесплатный фронтенд для Wolfram Engine
 
 - title: Антон Антонов
   name: Anton-Antonov
