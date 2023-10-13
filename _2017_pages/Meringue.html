@@ -1,0 +1,2179 @@
+<html><head lang="en">
+        <meta charset="utf-8">
+        <script>
+            window.OfflineMode = true;
+        </script>
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-cells@master/styles/defaults.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-cells@master/styles/ui.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-editor@master/src/styles.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-graphics-d3@master/src/styles.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-inputs@master/src/styles.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-markdown-support@master/src/katex.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-revealjs@master/dist/reveal.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-revealjs@master/src/style.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-revealjs@master/src/drawer/drawer.css">
+         
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/JerryI/wljs-revealjs@master/src/pointer/pointer.css">
+        
+
+        <!-- any inline js including core library (global) UPD: No longer exists -->
+         
+            <script>
+            const aflatten = (ary) => ary.flat(Infinity);
+
+class Deferred {
+  promise = {}
+  reject = {}
+  resolve = {}          
+
+  constructor() {
+    this.promise = new Promise((resolve, reject)=> {
+      this.reject = reject
+      this.resolve = resolve
+    });
+  }
+}  
+
+function isNumeric(value) {
+  return /^-?\d+$/.test(value);
+}
+
+const WLNumber = new RegExp(/^(-?\d+)(.?\d*)(\*\^)?(\d*)/);
+
+window.Deferred = Deferred;
+window.aflatten = aflatten;
+
+window.isNumeric = isNumeric;
+
+var interpretate = (d, env = {}) => {
+  interpretate.cnt = interpretate.cnt + 1;          
+
+  if (typeof d === 'undefined') {
+    console.log('undefined object');
+    return d;
+  }
+
+  const stringQ = typeof d === 'string';
+  //console.log(d);
+  //console.log(stringQ);
+  //real string
+  if (stringQ) {
+    if (d.charAt(0) == "'") return d.slice(1, -1);
+    if (isNumeric(d)) return parseInt(d); //for Integers
+  
+    if (WLNumber.test(d)) {
+      console.log(d);
+      //deconstruct the string
+      let [begin, floatString, digits, man, power] = d.split(WLNumber);
+    
+      if (digits === '.')
+        floatString += digits + '0';
+      else
+        floatString += digits;
+    
+      if (man)
+        floatString += 'E' + power;
+
+      console.log(floatString);
+    
+      return parseFloat(floatString);
+    }
+
+    //in safe mode just convert unknown symbols into a string
+    //if (!env.unsafe) return d;
+    //if not. it means this is a symbol
+  }
+  if (typeof d === 'number') {
+    return d; 
+  }
+
+  //console.log('type '+String(typeof d)+' of '+JSON.stringify(d));
+
+  //if not a JSON array, probably a promise object or a function
+  if (!(d instanceof Array) && !stringQ) return d;
+
+
+  //console.log(env);
+
+
+  //reading the structure of Wolfram ExpressionJSON
+  let name;
+  let args;
+
+  if (stringQ) {
+    //symbol
+    name = d;
+    args = undefined;
+  } else {
+    //subvalue
+    name = d[0];
+    args = d.slice(1, d.length);
+  }
+
+  //console.log("interpreting...");
+  //console.log(name);
+  //console.log(name);
+
+  //checking the scope
+  if ('scope' in env) 
+    if (name in env.scope) 
+      return env.scope[name](args, env);
+
+
+
+  //checking the context
+  if ('context' in env) {
+    if (name in env.context) {
+      //checking the method
+
+
+      if (env['method']) {
+        if (!env.context[name][env.method]) return console.error('method '+env['method']+' is not defined for '+name);
+        return env.context[name][env.method](args, env);
+      }
+
+      //fake frontendexecutable
+      //to bring local vars and etc
+      if ('virtual' in env.context[name] && !(env.novirtual)) {
+        const obj = new ExecutableObject('virtual-'+uuidv4(), env, d);
+        let virtualenv = obj.assignScope();
+        console.log('virtual env');
+        obj.firstName = name;
+        //console.log(virtualenv);
+        return env.context[name](args, virtualenv);    
+      }
+
+      return env.context[name](args, env);
+    }
+  }
+
+  //just go over all contextes defined to find the symbol
+  const c = interpretate.contextes;
+
+  for (let i = 0; i < c.length; ++i) {
+    if (name in c[i]) {
+      //console.log('symbol '+name+' was found in '+c[i].name);
+
+      if (env['method']) {
+        if (!c[i][name][env.method]) return console.error('method '+env['method']+' is not defined for '+name);
+        return c[i][name][env.method](args, env);
+      }
+
+      //fake frontendexecutable
+      //to bring local vars and etc
+      if ('virtual' in c[i][name] && !(env.novirtual)) {
+        const obj = new ExecutableObject('virtual-'+uuidv4(), env, d);
+        let virtualenv = obj.assignScope();
+        console.log('virtual env');
+
+        obj.firstName = name;
+        //console.log(virtualenv);        
+        return c[i][name](args, virtualenv);    
+      }     
+
+      return c[i][name](args, env);    
+    }
+  };
+
+  return (interpretate.anonymous(d, env));          
+};
+
+interpretate.cnt = 0;
+
+//contexes, so symbols names might be duplicated, therefore one can specify the propority context in env variable
+interpretate.contextes = [];
+//add new context
+interpretate.contextExpand = (context) => {
+  console.log(context.name + ' was added to the contextes of the interpreter');
+  interpretate.contextes.push(context);
+}
+
+//packed symbols (for the case when Kernel is temporary unavailable)
+interpretate.packedSymbols = {}
+interpretate.usedPackedSymbols = {}
+
+interpretate.garbageCollect = () => {
+  //collected unused packedSymbols
+  console.log('collect garbage!');
+  Object.keys(interpretate.packedSymbols).forEach((s)=>{
+    if (!(s in interpretate.usedPackedSymbols)) {
+      //collect!
+      console.warn('Symbol '+s+' was not used for a long time...');
+      server.send('NotebookDisposeSymbol["'+s+'"]');
+    } else {
+      console.warn('Symbol '+s+' wont be disposed. 200');
+    }
+  });
+
+}
+
+interpretate.anonymous = async (d, org) => {
+  //TODO Check if it set delayed or set... if set, then one need only to cache it
+  console.warn('Anonimous symbol');  
+
+  let name;
+  if (d instanceof Array) {
+    console.error('stack call: ');
+    console.warn(org.global.stack);
+    throw('subvalues are not supported for '+d[0]);
+  } else {
+    name = d;   //symbol
+  }
+
+  let data;
+  let packed = false;
+
+  if (!server.socket) {
+    if (!(name in interpretate.packedSymbols)) {
+      console.error('Symbol '+name+' is undefined in any contextes available. Communication with Wolfram Kernel is not possible for now.');
+    } else {
+      data = interpretate.packedSymbols[name];
+      interpretate.usedPackedSymbols[name] = true;
+      console.warn('packed Symbol: '+name);
+      packed = true;
+    }
+  } else {
+    if (name in interpretate.packedSymbols) {
+      data = interpretate.packedSymbols[name];
+      interpretate.usedPackedSymbols[name] = true;
+      console.warn('packed Symbol: '+name);
+      packed = true;
+    } else {
+      console.warn('sending request to a server... for'+name);
+      data = await server.getSymbol(name); //get the data
+      console.log('got');
+      console.log(data);
+    }
+  }
+  
+  let symbolQ = typeof data === 'string';
+
+  if (symbolQ) {
+    if (data.charAt(0) == "'") symbolQ = false;
+    if (isNumeric(data)) symbolQ = false;
+  }
+
+  if ((symbolQ && !(data in core)) || typeof data == 'undefined') {
+    console.log('checking... '+name);
+    console.log('gained data..'+data);
+    if (!(name in interpretate.packedSymbols)) {
+      throw('Symbol '+data+' is not defined in any contextes and packing'); 
+      return;
+    } else {
+      packed = true;
+      console.warn('packed Symbol: '+name);
+      data = interpretate.packedSymbols[name];
+      interpretate.usedPackedSymbols[name] = true;
+    } 
+  }
+
+  core[name] = async (args, env) => {
+    console.log('calling our symbol...');
+    //evaluate in the context
+    const data = await interpretate(core[name].data, env);
+
+    if (env.root && !env.novirtual) core[name].instances[env.root.uid] = env.root; //if it was evaluated insdide the container, then, add it to the tracking list
+    //if (env.hold) return ['JSObject', core[name].data];
+
+    return data;
+  }
+
+  core[name].update = async (args, env) => {
+    //evaluate in the context
+ 
+    const data = await interpretate(core[name].data, env);
+    //if (env.hold) return ['JSObject', data];
+    return data;
+  }  
+
+  core[name].destroy = async (args, env) => {
+
+    delete core[name].instances[env.root.uid];
+    console.warn(env.root.uid + ' was destroyed')
+    console.warn('external symbol was destoryed');
+  }  
+
+  core[name].data = data; //get the data
+
+  if (!packed) server.addTracker(name);
+  server.trackedSymbols[name] = true;
+
+  core[name].virtual = true;
+  core[name].instances = {};
+
+  return interpretate(d, org);
+}
+
+//backward transformation
+interpretate.toJSON = (d) => {
+  if (typeof d === 'undefined') {
+    console.log('undefined object');
+    return 'Null';
+  }
+  if (typeof d === 'string') {
+    return "'"+d+"'";
+  }
+  if (typeof d === 'number') {
+    return d; 
+  }
+
+  //if not a JSON array, probably a promise object
+  if (!(d instanceof Array)) {
+    console.error('Unknow object. Replaced with Null');
+    return 'Null';  
+  }
+
+  const sub = [];
+  sub.push('List');
+  sub.push(...d);
+
+  return sub;
+
+}
+
+const fakeSocket = () => {
+  return false;
+}
+
+fakeSocket.q = []
+
+fakeSocket.send = (expr) => {
+  console.warn('No connection to a kernel... keeping in a pocket');
+  fakeSocket.q.push(expr)
+}
+
+//Server API
+let server = {
+  promises : {},
+  socket: fakeSocket,  
+  
+  kernelControl: {
+    
+  },
+
+  trackedSymbols: {},
+  
+  kernel: {
+    socket: {
+      send: () => {
+        socket.send('NotebookPopupFire["error", "No connection to the working kernel. Please create a link first!"]');
+        throw 'No connection to the working kernel. Please create a link first!';
+      }
+    }
+  },
+
+  init(socket) {
+    if (this.socket.q) {
+      console.warn('Sending all quered messages');
+      this.socket.q.forEach((message)=>{
+        socket.send(message);
+      })
+    }
+    this.socket = socket;
+  },
+
+  //evaluate something on the master kernel and make a promise for the reply
+  ask(expr) {
+    const uid = uuidv4();
+
+    const promise = new Deferred();
+    this.promises[uid] = promise;
+
+    this.socket.send('NotebookPromise["'+uid+'", ""]['+expr+']');
+
+    return promise.promise 
+  },
+  //fire event on the secondary kernel (your working area) (no reply)
+  emitt(uid, data) {
+    this.kernel.socket.send('EmittedEvent["'+uid+'", '+data+']');
+  },
+
+  send(expr) {
+    this.socket.send(expr);
+  },
+
+  post: {
+    //for not it is raw association.
+    //it can be packed as normal FILEFORM!
+    emitt(uid, data) {
+      const p = new Deferred();
+      WSPHttpBigQuery('NotebookEmitt[EmittedEvent["'+uid+'", '+data+'], "'+window.Notebook+'"]', p);
+      return p.promise;
+    },
+
+    send(data) {
+      const p = new Deferred();
+      WSPHttpBigQuery(data, p);
+      return p.promise;      
+    }
+  },
+
+  //evaluate something on the secondary kernel (your working area) and make a promise for the reply
+  askKernel(expr) {
+    const uid = uuidv4();
+
+    const promise = new Deferred();
+    this.promises[uid] = promise;
+    //not implemented
+    //console.error('askKernel is not implemented');
+    //console.log('NotebookPromiseKernel["'+uid+'", ""][Hold['+expr+']]');
+    this.socket.send('NotebookPromiseKernel["'+uid+'", ""][Hold['+expr+']]');
+
+    return promise.promise    
+  },
+
+  getSymbol(expr) {
+    const uid = uuidv4();
+
+    const promise = new Deferred();
+    this.promises[uid] = promise;
+    //not implemented
+    //console.error('askKernel is not implemented');
+    //console.log('NotebookPromiseKernel["'+uid+'", ""][Hold['+expr+']]');
+    this.socket.send('NotebookGetSymbol["'+uid+'", ""][Hold['+expr+']]');
+
+    return promise.promise     
+  },
+
+  //evaluate something on the secondary kernel (your working area) (no reply)
+  talkKernel(expr) {
+    this.kernel.socket.send('NotebookEmitt['+expr+']');
+  },
+
+  clearObject(uid) {
+    this.socket.send('NotebookGarbagePut["'+uid+'"];');
+  },
+
+  addTracker(name) {
+    console.warn('added tracker for '+name);
+    this.kernel.socket.send('NotebookAddTracking['+name+']')
+  }
+}
+
+
+var ObjectHashMap = {}
+var InstancesHashMap = {}
+
+window.ObjectHashMap = ObjectHashMap
+window.InstancesHashMap = InstancesHashMap
+
+let garbageTimeout = false;
+
+const renewGarbageTimer = () => {
+  if (garbageTimeout) clearTimeout(garbageTimeout);
+  garbageTimeout = setTimeout(collectGarbage, 10000);
+}
+
+const collectGarbage = () => {
+  console.log('collecting garbage...');
+  if (window.OfflineMode) return;
+  Object.keys(ObjectHashMap).forEach((el)=>{
+    ObjectHashMap[el].garbageCollect();
+  });
+}
+
+//storage for the frontend objects / executables
+class ObjectStorage {
+  refs = {}
+  uid = ''
+  cached = false
+  cache = []
+
+  garbageCollect() {
+    if (Object.keys(this.refs).length == 0) {
+      server.clearObject(this.uid);
+      this.cached = true;
+      this.cache = ['GarbageCollected', 'Null'];
+    }
+
+  }         
+
+  constructor(uid) {
+    this.uid = uid;
+    ObjectHashMap[uid] = this;
+
+    //check garbage
+    renewGarbageTimer();
+  }           
+
+  //assign an instance of FrontEndExecutable to it
+  assign(obj) {
+    this.refs[obj.instance] = obj;
+  }         
+
+  //remove a reference to the instance of FrontEndExecutable
+  dropref(obj) {
+    console.log('dropped ref: ' + obj.instance);
+    delete this.refs[obj.instance];
+  }         
+
+  //update the data in the storage and go over all assigned objects
+  update(newdata) {
+    this.cache = newdata;
+    Object.keys(this.refs).forEach((ref)=>{
+      //console.log('Updating... ' + this.refs[ref].uid);
+      this.refs[ref].update();
+    });
+  }         
+
+  //just get the object (if not in the client -> ask for it and wait)
+  get() {
+    if (this.cached) return this.cache;
+    const promise = new Deferred();
+    console.log('NotebookGetObject["'+this.uid+'"]');
+    server.ask('NotebookGetObject["'+this.uid+'"]').then((data)=>{
+      this.cache = JSON.parse(interpretate(data));
+      this.cached = true;
+      console.log('got from the server. storing in cache...');
+      promise.resolve(this.cache);
+    })
+
+    return promise.promise;  
+  }
+}
+
+window.ObjectStorage = ObjectStorage
+
+//instance of FrontEndExecutable object
+class ExecutableObject {
+  env = {}          
+
+  //uid (not unique) (global)
+  uid = ''
+  //uid (unique) (internal)
+  instance = ''         
+
+  dead = false
+  virtual = false
+
+  //local scope
+  local = {}
+
+  assignScope() {
+    this.env.local = this.local;
+    return this.env;
+  }
+
+  //run the code inside
+  async execute() {
+    console.log('executing '+this.uid+'....');
+    let content;
+
+    if (this.virtual) console.error('execute() method is not allowed on virtual functions!');
+
+    content = await this.storage.get(this.uid);
+
+    //pass local scope
+    this.env.local = this.local;
+    //console.log('interpreting the content of '+this.uid+'....');
+    //console.log('content');
+    //console.log(content);
+    return interpretate(content, this.env);
+  }
+
+  //dispose the object and all three of object underneath
+  //direction: TOP -> BOTTOM
+  dispose() {
+    if (this.dead) return;
+    this.dead = true;
+
+    console.log('DESTORY: ' + this.uid);
+    //change the mathod of interpreting
+    this.env.method = 'destroy';
+
+    if (this.virtual) console.log('virtual type was disposed'); else console.log('normal container was destoryed');
+
+    //unregister from the storage class
+    if (!this.virtual) this.storage.dropref(this);
+
+    //no need of this since we can destory them unsing env.global.stack
+    let content;
+    if (!this.virtual) content = this.storage.get(this.uid); else content = this.virtual;
+
+    //pass local scope
+    this.env.local = this.local;    
+    //the link between objects will be dead automatically
+    interpretate(content, this.env);
+
+    delete InstancesHashMap[this.instance];
+  }         
+
+  //update the state of it and recompute all objects inside
+  //direction: BOTTOM -> TOP
+  update(top) {
+    //console.log('updating frontend object...'+this.uid);
+    //bubble up (only by 1 level... cuz some BUG, but can still work even with this limitation)
+    if (this.parent instanceof ExecutableObject && !(this.child instanceof ExecutableObject)) return this.parent.update(); 
+
+    if (this.virtual) {
+      //console.log('-> virtual type');
+      //we can detect if it was destoryed
+      //commit suicide because we alone ;(
+      //this.destroy();
+    }
+
+    //change the method of interpreting 
+    this.env.method = 'update';
+    //pass local scope
+    this.env.local = this.local;
+    //console.log('interprete...'+this.uid);
+
+    let content;
+    if (!this.virtual) 
+      content = this.storage.get(this.uid); else content = this.virtual;
+
+    return this.local.middleware(interpretate(content, this.env));
+  }
+
+  constructor(uid, env, virtual = false) {
+    console.log('constructing the instance of '+uid+'...');
+
+    this.uid = uid;
+    this.env = {...env};
+
+    this.instance = uuidv4();
+
+    this.env.element = this.env.element || 'body';
+    //global scope
+    //making a stack-call only for executable objects
+    this.env.global.stack = this.env.global.stack || {};
+    this.env.global.stack[uid] = this;
+
+    this.env.root = this.env.root || {};
+
+    //middleware handler (identity)
+    this.local.middleware = (a) => a;
+
+    //for virtual functions
+    if (virtual) {
+      console.log('virtual object detected!');
+      console.log('local storage is enabled');
+      //console.log(virtual);
+      this.virtual = virtual;
+    } else {
+      if (uid in ObjectHashMap) this.storage = ObjectHashMap[uid]; else this.storage = new ObjectStorage(uid);
+      this.storage.assign(this);
+    }
+
+    if (this.env.root instanceof ExecutableObject) {
+      //connecting together
+      console.log('connection between two: '+this.env.root.uid + ' and a link to '+this.uid);
+      this.parent = this.env.root;
+      this.env.root.child = this;
+    }
+
+    this.env.root = this;
+
+    InstancesHashMap[this.instance] = this;
+
+    //global hook-functions
+    if (this.env.global.hooks) {
+      const obj = this;
+      this.env.global.hooks.forEach((hook) => {
+        hook(obj)
+      });
+    }
+
+    return this;
+  }           
+};
+
+window.ExecutableObject = ExecutableObject
+
+
+class jsRule {
+  // Constructor
+  constructor(left, right) {
+    this.left = left;
+    this.right = right;
+  }
+}
+
+
+
+function uuidv4() { 
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+window.uuidv4 = uuidv4
+
+function downloadByURL(url, name) {
+  var link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', name);
+  link.click();
+  link.remove();
+}
+
+window.downloadByURL = downloadByURL
+
+var setInnerHTML = function(elm, html) {
+  elm.innerHTML = html;
+  Array.from(elm.querySelectorAll("script")).forEach( oldScript => {
+    const newScript = document.createElement("script");
+    Array.from(oldScript.attributes)
+      .forEach( attr => newScript.setAttribute(attr.name, attr.value) );
+    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+    oldScript.parentNode.replaceChild(newScript, oldScript);
+  });         
+};
+
+window.setInnerHTML = setInnerHTML
+
+function openawindow(url, target='_self') {
+  const fake = document.createElement('a');
+  fake.target = target;
+  fake.href = url;
+  fake.click();
+}
+
+window.openawindow = openawindow
+
+interpretate.throttle = 30;
+
+// Throttle function: Input as function which needs to be throttled and delay is the time interval in milliseconds
+function throttle(cb, delay = () => interpretate.throttle) {
+    let shouldWait = false
+    let waitingArgs
+    const timeoutFunc = () => {
+      if (waitingArgs == null) {
+        shouldWait = false
+      } else {
+        cb(...waitingArgs)
+        waitingArgs = null
+        setTimeout(timeoutFunc, delay())
+      }
+    }         
+
+    return (...args) => {
+      if (shouldWait) {
+        waitingArgs = args
+        return
+      }         
+
+      cb(...args)
+      shouldWait = true
+      setTimeout(timeoutFunc, delay())
+    }
+}
+
+window.throttle = throttle;
+
+window.server = server;
+
+window.interpretate = interpretate;
+            </script>
+         
+            <script>
+            var core = {};
+core.name = "Core Context";
+interpretate.contextExpand(core);
+
+core.DefaultWidth = 600;
+
+core.ConsoleLog = [];
+
+core.GarbageCollected = async (args, env) => {
+    if ('element' in env) {
+      env.element.innerText = '- Garbage -';
+    }
+    console.log('garbage collected');
+}
+
+core.True = (args, env) => {
+  return true;
+}
+
+core.False = (args, env) => {
+  return false;
+}
+
+core.FrontEndExecutable = async (args, env) => {
+    const key = interpretate(args[0], env);
+    //creates an instance with its own separate env
+    //we need this local context to create stuff and then, destory it if it necessary
+    console.log("FEE: creating an object with key "+key);
+    //new local scope, global is the same
+    const obj = new ExecutableObject(key, env);
+
+    const result = await obj.execute()
+    return result;  
+  };          
+
+  core.FrontEndExecutable.update = async (args, env) => {
+    const key = interpretate(args[0], env);
+    return await env.global.stack[key].execute();
+  };          
+
+  core.FrontEndExecutable.destroy = async (args, env) => {
+    const key = interpretate(args[0], env);
+    await env.global.stack[key].dispose();
+  };          
+
+  core._typeof = function(args, env) {
+    if (typeof args === 'string') {
+      if (args.charAt(0) === "'")
+        return 'string';
+
+      //if (core[args].virtual) return 'variable';
+      return 'idunno'
+    }
+    if (typeof args === 'number') {
+      return 'number';
+    }
+    if (args instanceof Array) {
+      return args[0];
+    }
+
+    return 'undefined';
+  }         
+
+  core._getRules = async function(args, env) {
+    let rules = {};
+    if (env.hold) {
+      for (const el of args) {
+        if(el instanceof Array) {
+          if (el[0] === 'Rule') {
+            rules[interpretate(el[1], {...env, hold:false})] = el[2];
+          }
+        }
+      };
+    } else {
+      for (const el of args) {
+        if(el instanceof Array) {
+          if (el[0] === 'Rule') {
+            rules[interpretate(el[1], {...env, hold:false})] = await interpretate(el[2], env);
+          }
+        }
+      };
+    }
+
+    return rules; 
+  }         
+
+  core.FireEvent = function(args, env) {
+    const key  = interpretate(args[0], env);
+    const data = interpretate(args[1], env);          
+
+    server.emitt(key, data);
+  }         
+
+  core.KernelFire = function(args, env) {
+    const data = interpretate(args[0], env);          
+
+    server.talkKernel(data);
+  }         
+
+  core.KernelEvaluate = function(args, env) {
+    const data = interpretate(args[0], env);          
+
+    server.askKernel(data);
+  }   
+
+  core.TalkMaster = async (args, env) => {
+    const data = await interpretate(args[0], env);
+    const wrapper = await interpretate(args[1], env);
+    server.send(wrapper + '["' + JSON.stringify(data).replace(/"/gm, "\\\"") + '"]');
+  }
+
+  core.ReadClipboard = async (args, env) => {
+    const clipText = await navigator.clipboard.readText();
+    return clipText;
+  }
+
+
+  core.PromiseResolve = (args, env) => {
+    const uid = interpretate(args[0], env);
+    console.log('promise resolved! : '+uid);
+    server.promises[uid].resolve(args[1]);
+    delete server.promises[uid];
+  }         
+
+  core.UpdateFrontEndExecutable = function (args, env) {
+    const key = interpretate(args[0], env);
+    var data  = JSON.parse(interpretate(args[1], env));
+
+    ObjectHashMap[key].update(data);
+  }         
+
+  core.FrontEndDispose = function (args, env) {
+    //no need anymore
+    console.log('garbage removed');
+  }
+
+  core.FrontEndVirtual = (args, env) => {
+    console.log('virtual function was created');
+    const obj = new ExecutableObject('virtual-'+uuidv4(), env, args[0]);
+    let virtualenv = obj.assignScope();
+
+    return interpretate(args[0], virtualenv);
+  }         
+
+  core.SetFrontEndObject = function (args, env) {
+    const key = interpretate(args[0], env);
+    if (!(key in ObjectHashMap)) { console.warn('not found'); return; }
+    ObjectHashMap[key].update(args[1]);
+  }
+
+  core.CreateFrontEndObject = function (args, env) {
+    const key = interpretate(args[0], env);
+
+    if (key in ObjectHashMap) {
+      console.warn('already exists!');
+      ObjectHashMap[key].update(args[1]);
+    }
+
+    const ob =  new ObjectStorage(key); 
+    ob.cached = true; 
+    ob.cache = args[0];
+  }  
+
+  core.FlipFrontEndObjects = async function (args, env) {
+    const key1 = interpretate(args[0], env);
+    const key2 = interpretate(args[1], env);
+
+    const clone = structuredClone(await ObjectHashMap[key1].get());
+    ObjectHashMap[key1].update(await ObjectHashMap[key2].get());
+    ObjectHashMap[key2].update(clone);
+  }
+
+  core.NoVirtual = async (args, env) => {
+    return await interpretate(args, {...env, novirtual: true})
+  }
+
+  core.NoVirtual.destroy = core.NoVirtual
+
+
+  core.FlipSymbols = async function (args, env) {
+    const key1 = args[0];
+    const key2 = args[1];
+
+    if (args.length > 2) {
+      console.log('applying function '+args[2]);
+      const temp = await interpretate([args[2], key1], {...env, novirtual: true});
+      core[key1].data = core[key2].data;
+      core[key2].data = temp;
+    } else {
+      const temp = core[key1].data;
+      core[key1].data = core[key2].data;
+      core[key2].data = temp;
+    }
+
+
+
+    Object.values(core[key1].instances).forEach((inst) => {
+      inst.update();
+    });
+
+    Object.values(core[key2].instances).forEach((inst) => {
+      inst.update();
+    });    
+  }  
+
+  core.Unsafe = async function (args, env) {
+    return await interpretate(args[0], {...env, unsafe: true});
+  }      
+  
+  core.GlobalThrottle = async function (args, env) {
+    interpretate.throttle = await interpretate(args[0], env);
+  }
+
+  core.FrontEndExecutableHold = core.FrontEndExecutable;
+  //to prevent codemirror 6 from drawing it
+  core.FrontEndRef = core.FrontEndExecutable;
+  //another alias
+  core.FrontEndExecutableWrapper = core.FrontEndExecutable;
+  //hold analogue for the backend
+  core.FrontEndOnly = (args, env) => {
+    return interpretate(args[0], env);
+  };          
+
+  core.FrontEndOnly.update = (args, env) => {
+    return interpretate(args[0], env);
+  };          
+
+  core.FrontEndOnly.destroy = (args, env) => {
+    interpretate(args[0], env);
+  };
+
+  core.FHold = core.FrontEndOnly;
+  //AHHAHAHAH
+  core.Hold = core.FrontEndOnly;  
+  
+  core.Dynamic = core.FrontEndOnly; 
+
+  core.Offload = core.FrontEndOnly; 
+
+  core.FrontDynamic = core.FrontEndOnly; 
+
+  core.Power = async (args, env) => {
+    //if (!env.numerical) return ["Power", ...args];
+
+    const val = await interpretate(args[0], env);
+    const p   = await interpretate(args[1], env);         
+
+    return Math.pow(val,p);
+}
+
+core.E = () => Math.E
+core.E.update = core.E
+
+
+core.Power.update = core.Power
+
+core.Plus = async (args, env) => {
+let x = await interpretate(args[0], env);
+let y = await interpretate(args[1], env);
+
+const typeX = typeof x;
+const typeY = typeof y;
+
+if (typeX === 'number' && typeof typeY !== 'number') {
+return sumNestedArrayByScalar(y, x)
+}
+
+if (typeY === 'number' && typeof typeX !== 'number') {
+return sumNestedArrayByScalar(x, y)
+}    
+
+if (typeY !== 'number' && typeof typeX !== 'number') {
+return calculateNestedArraySum(x,y)
+}
+//TODO: evaluate it before sending its original symbolic form
+return x + y;
+}  
+
+core.Plus.update = core.Plus;
+
+core.Plus.destroy = async (args, env) => {
+  await interpretate(args[0], env);
+  await interpretate(args[1], env);
+}
+
+core.Rational = async function (args, env) {
+  return (await interpretate(args[0], env)) / (await interpretate(args[1], env));
+}
+
+core.Rational.update = core.Rational
+core.Rational.destroy = core.Rational
+
+function multiplyNestedArrayByScalar(arr, scalar) {
+if (Array.isArray(arr)) {
+return arr.map((item) => multiplyNestedArrayByScalar(item, scalar));
+} else {
+return arr * scalar;
+}
+}
+
+function calculateNestedArraySum(arr1, arr2) {  
+// Base case: if both inputs are numbers, return their sum
+
+
+const result = [];
+
+for (let i = 0; i < arr1.length; i++) {
+if (Array.isArray(arr1[i]) && Array.isArray(arr2[i])) {
+// If both elements are arrays, recursively calculate nested sum
+result.push(calculateNestedArraySum(arr1[i], arr2[i]));
+} else if (!Array.isArray(arr1[i]) && !Array.isArray(arr2[i])) {
+// If both elements are numbers, add them
+result.push(arr1[i] + arr2[i]);
+} else {
+// Mismatched types, throw an error
+throw new Error('Mismatched element types in nested arrays.');
+}
+}
+
+return result;
+}  
+
+function sumNestedArrayByScalar(arr, scalar) {
+if (Array.isArray(arr)) {
+return arr.map((item) => sumNestedArrayByScalar(item, scalar));
+} else {
+return arr + scalar;
+}
+}  
+
+core.Times = async function (args, env) {
+//if (env.numerical === true) return (await interpretate(args[0], env)) * (await interpretate(args[1], env));
+let x = await interpretate(args[0], env);
+let y = await interpretate(args[1], env);
+
+const typeX = typeof x;
+const typeY = typeof y;
+
+if (typeX === 'number' && typeof typeY !== 'number') {
+return multiplyNestedArrayByScalar(y, x)
+}
+
+if (typeY === 'number' && typeof typeX !== 'number') {
+return multiplyNestedArrayByScalar(x, y)
+}    
+
+//TODO: evaluate it before sending its original symbolic form
+return x * y;
+}
+
+core.Times.update = core.Times;
+
+function getRandomArbitrary(min, max) {
+return Math.random() * (max - min) + min;
+}
+
+core.Times.destroy = async function (args, env) {
+//if (env.numerical === true) return (await interpretate(args[0], env)) * (await interpretate(args[1], env));
+    await interpretate(args[0], env);
+    await interpretate(args[1], env);
+}
+
+core.RandomReal = async (args, env) => {
+const range = await interpretate(args[0], env);
+
+if (args.length > 1) {
+let size = await interpretate(args[1], env);
+let arr = [];
+
+if (size[0]) {
+for (let j=0; j<size[0]; ++j) {
+const sub = [];
+for (let i=0; i<size[1]; ++i) {
+sub.push(getRandomArbitrary(...range));
+}
+arr.push(sub);
+}
+
+return arr;
+} else {
+for (let i=0; i<size; ++i) {
+arr.push(getRandomArbitrary(...range));
+}
+return arr;
+}
+} 
+return getRandomArbitrary(...range);
+
+
+}
+
+core.Sin = async function (args, env) {
+return Math.sin(await interpretate(args[0], env));    
+}
+
+core.Cos = async function (args, env) {
+return Math.cos(await interpretate(args[0], env));    
+}
+
+core.Cos.update = core.Cos
+core.Cos.destroy = () => {}
+
+core.Sin.update = core.Sin
+core.Sin.destroy = () => {}
+
+core.Tuples = async (args, env) => {
+const array = await interpretate(args[0], env);
+const subsetSize = interpretate(args[1], env);
+
+const result = [];
+
+function generateSubsets(index, currentSubset) {
+if (currentSubset.length === subsetSize) {
+result.push(currentSubset);
+return;
+}
+
+for (let i = 0; i < array.length; i++) {
+generateSubsets(i, [...currentSubset, array[i]]);
+}
+}
+
+generateSubsets(0, []);
+
+return result;
+}  
+
+core.Tuples.update = core.Tuples;
+core.Tuples.destroy = (args, env) => { interpretate(args[0], env) }
+
+core.EventListener = (args, env) => {
+console.error('Event listener for general cases is not supported! Please, use it with Graphics or other packages');
+}
+
+core.List = async function (args, env) {
+  let copy, e, i, len, list;
+  list = [];
+
+  if (env.hold === true) {
+  //console.log('holding...');
+    for (i = 0, len = args.length; i < len; i++) {
+      e = args[i];
+      list.push(e);
+    }
+    return list;
+  }
+
+  copy = Object.assign({}, env);
+  for (i = 0, len = args.length; i < len; i++) {
+    e = args[i];
+
+    list.push(await interpretate(e, copy));
+  }
+
+  return list;
+};
+
+core.List.destroy = (args, env) => {
+var copy, i, len, list;
+for (i = 0, len = args.length; i < len; i++) {
+interpretate(args[i], env);
+}
+};
+
+core.List.update = core.List;
+
+core.Association = function (args, env) {
+return core._getRules(args, env);
+};
+
+
+core.Function = (args, env) => {
+//void
+}
+
+core.$Failed = (args, env) => {
+console.error('$Failed encountered');
+}
+
+core.Pause = async (args, env) => {
+const time = 1000*(await interpretate(args[0], env));
+
+return new Promise(resolve => {
+setTimeout(() => {
+//console.log("Finished Inner Timeout")
+resolve('resolved');
+}, time);
+})  
+}
+
+core.Normalize = async (args, env) => {
+const data = await interpretate(args[0], env);
+//console.log(data);
+
+let length = 0.0;
+for (let i=0; i<data.length; ++i) {
+length += data[i]*data[i];
+}
+
+
+return (data.map((e)=>e/length));
+}
+
+core.Dot = async (args, env) => {
+const x = await interpretate(args[0], env);
+const y = await interpretate(args[1], env);
+
+let total = 0.0;
+for (let i=0; i<x.length; ++i) {
+  total += x[i]*y[i];
+}
+return total;
+}
+
+core.Cross = async (args, env) => {
+const x = await interpretate(args[0], env);
+const y = await interpretate(args[1], env);
+
+return [y[2]*x[1] - y[1]*x[2], -y[2]*x[0]+y[0]*x[2], y[1]*x[0] - y[0]*x[1]];
+}
+
+core.NoUpdates = async (args, env) => {
+    return await interpretate(args[0], env);
+}
+
+core.NoUpdates.destroy = async (args, env) => {
+    return await interpretate(args[0], env);
+}
+
+core.NoUpdates.update = async (args, env) => {
+    console.log('Updates are blocked by NoUpdates expr');
+    return null;
+}
+
+core.Static = async (args, env) => {
+  return await interpretate(args[0], env);
+}
+
+core.Static.destroy = async (args, env) => {
+  return await interpretate(args[0], env);
+}
+
+core.Static.update = async (args, env) => {
+  console.log('Updates are not allowed inside Static');
+  return undefined;
+}
+
+core.Constant = async (args, env) => {
+  return await interpretate(args, {...env, novirtual: true})
+}
+
+core.Constant.update = async (args, env) => {
+  console.log('Updates are blocked for constants');
+  return undefined;
+}
+
+core.Constant.destroy = core.Constant  
+
+core.CompoundExpression = async (args, env) => {
+//sequential execution
+let content;
+
+for (const expr of args) {
+content = await interpretate(expr, env);
+}
+
+return content;
+}
+
+core.CompoundExpression.update = async (args, env) => {
+//sequential execution
+let content;
+
+for (const expr of args) {
+content = await interpretate(expr, env);
+}
+
+return content;
+}
+
+core.CompoundExpression.destroy = async (args, env) => {
+for (const expr of args) {
+await interpretate(expr, env);
+}    
+}
+
+core.While = async (args, env) => {
+  //sequential execution
+
+  //creating virtual objects in conditions are fobidden
+  const condition = await interpretate(args[0], {...env, novirtual: true});
+  //console.log('condition: ' + condition);
+  if (condition) {
+
+    //creating virtual objects is fobidden in cycles
+    await interpretate(args[1], {...env, novirtual: true});
+    await interpretate(['While', ...args], env);
+  }
+} 
+
+core.If = async (args, env) => {
+const cond = await interpretate(args[0], env);
+if (cond) {
+return await interpretate(args[1], env);
+} else {
+if (args.length > 2) return await interpretate(args[2], env);
+return null;
+}
+}
+
+core.Less = async (args, env) => {
+if ((await interpretate(args[0], env)) < (await interpretate(args[1], env))) return true; else return false;
+}
+
+core.Greater = async (args, env) => {
+if ((await interpretate(args[0], env)) > (await interpretate(args[1], env))) return true; else return false;
+}  
+
+core.Equals = async (args, env) => {
+if ((await interpretate(args[0], env)) === (await interpretate(args[1], env))) return true; else return false;
+}  
+
+
+core.Alert = (args, env) => {
+alert(interpretate(args[0], env));
+}
+
+core.Print = async (args, env) => {
+console.log('Out:\t'+JSON.stringify(await interpretate(args[0], env)));
+}  
+
+core.N = (args, env) => {
+const copy = {...env, numerical: true};
+return interpretate(args[0], copy);
+}
+
+core.AttachDOM = async (args, env) => {
+//used to attach dom element to the containirized function
+if (!env.root) {
+console.warn('Using AttachDOM on pure function is not recommended. Consider to use virtual or real containers instead!');
+}
+
+const id = await interpretate(args[0], env);
+env.element = document.getElementById(id);
+return id;
+}
+
+core.WindowScope = async (args, env) => {
+const key = interpretate(args[0]);
+return window[key];
+}
+
+core.Evaluate = async (args, env) => {
+const i = await interpretate(args[0], env);
+
+return await interpretate(i, env);
+}
+
+core.RandomSample = async (args, env) => {
+//TODO: needs perfomance optimization. do not evaluate deeper than
+let list = await interpretate(args[0], {...env});
+
+_shuffle(list);
+
+return list;
+}
+
+function _shuffle(array) {
+let currentIndex = array.length,  randomIndex;
+
+// While there remain elements to shuffle.
+while (currentIndex != 0) {
+
+// Pick a remaining element.
+randomIndex = Math.floor(Math.random() * currentIndex);
+currentIndex--;
+
+// And swap it with the current element.
+[array[currentIndex], array[randomIndex]] = [
+array[randomIndex], array[currentIndex]];
+}
+
+return array;
+}
+
+core.Table = async (args, env) => {
+let copy = Object.assign({}, env);
+copy.hold = false;
+
+let listOfRanges = [];
+
+for (let ranges of args.slice(1)) {
+listOfRanges.push({ranges: await interpretate(ranges, {...env, hold: true})});
+//just to get a JS array of WL objects //hah kinda strange combination
+}
+
+if (!copy.scope) copy.scope = {};
+let deepcopy = {...copy.scope};
+
+//first stage - assign the first values
+for (let i=0; i<listOfRanges.length; ++i) {
+//console.warn(listOfRanges[i]);
+listOfRanges[i].id =  listOfRanges[i].ranges.shift();
+//console.log('variable: '+listOfRanges[i].id);
+
+switch(listOfRanges[i].ranges.length) {
+case 1:
+const a = await interpretate(listOfRanges[i].ranges[0], {...env, numerical:true, novirtual:true, hold:false});
+if (a instanceof Array) {
+  //array instead of a number
+  listOfRanges[i].ranges = [1, a.length];
+  listOfRanges[i].array = a;
+
+  break;
+}
+
+const newranges = [1, a];   
+listOfRanges[i].ranges = newranges;       
+
+break;
+
+case 2:
+//console.log('a numerical range');
+
+listOfRanges[i].ranges[0] = await interpretate(listOfRanges[i].ranges[0], {...env, novirtual:true, numerical:true, hold:false});
+listOfRanges[i].ranges[1] = await interpretate(listOfRanges[i].ranges[1], {...env, novirtual:true, numerical:true, hold:false});
+break;
+
+case 3:
+//console.log('a numerical range with defined step');
+
+listOfRanges[i].ranges[0] = await interpretate(listOfRanges[i].ranges[0], {...env, novirtual:true, numerical:true, hold:false});
+listOfRanges[i].ranges[1] = await interpretate(listOfRanges[i].ranges[1], {...env, novirtual:true, numerical:true, hold:false});
+listOfRanges[i].ranges[2] = await interpretate(listOfRanges[i].ranges[2], {...env, novirtual:true, numerical:true, hold:false});
+break;      
+}      
+}
+
+//console.log(JSON.stringify(listOfRanges));
+
+
+const iterate = async (r0, f, level) => { 
+const result = [];
+const r = {...r0};
+
+//console.log('range: '+JSON.stringify(r));
+
+switch(r.ranges.length) {
+case 2:
+if (r.array) {
+
+for(let i=r.ranges[0]; i<=r.ranges[1]; i++) {
+  //console.log('iterator '+r.id+' = '+i);
+  deepcopy[r.id] = () => r.array[i-1];
+  result.push(await f(level+1));
+}
+
+break;
+}
+
+for(let i=r.ranges[0]; i<=r.ranges[1]; i++) {
+//console.log('iterator '+r.id+' = '+i);
+deepcopy[r.id] = () => i;
+result.push(await f(level+1));
+}
+break;
+
+case 3:
+for(let i=r.ranges[0]; i<=r.ranges[1]; i=i+r.ranges[2]) {
+//console.log('iterator '+r.id+' = '+i);
+deepcopy[r.id] = () => i;
+result.push(await f(level+1));
+}
+break;
+}
+return result;
+};  
+
+let m;
+m = (level) => {
+//console.log('go deeper');
+if (level === listOfRanges.length) return interpretate(args[0], {...copy, scope: {...deepcopy}}); 
+//console.log('next nested');
+return iterate(listOfRanges[level], m, level);
+}
+
+const table = await iterate(listOfRanges[0], m, 0);
+//console.log('table');
+//console.log(table);
+
+if (env.hold) {
+//env.hold = false;
+//return ["JSObject", table]; 
+}
+return table;
+
+}
+
+core.Table.update = core.Table
+
+core.Table.destroy = (args, env) => {
+args.forEach((a) => {
+interpretate(a, env);
+})
+}
+
+core.JSObject = (args, env) => {
+return args[0];
+}
+
+core.Set = async (args, env) => {
+const data = await interpretate(args[1], {...env, novirtual: true, method: undefined});
+const name = args[0];
+
+//console.log(name);
+
+if (name in core) {
+//console.log("update");
+//update
+core[name].data = data;
+
+for (const inst of Object.values(core[name].instances)) {
+inst.update();
+};    
+
+return;
+}
+
+//create
+console.log("create");
+core[name] = async (args, env) => {
+//console.log('calling our symbol...');
+if (env.root && !env.novirtual) core[name].instances[env.root.uid] = env.root; //if it was evaluated insdide the container, then, add it to the tracking list
+//if (env.hold) return ['JSObject', core[name].data];
+
+return core[name].data;
+}
+
+core[name].update = async (args, env) => {
+//if (env.hold) return ['JSObject', core[name].data];
+return core[name].data;
+}    
+
+core[name].virtual = true;
+core[name].instances = {};
+
+core[name].data = data;
+
+}
+
+core.Set.destroy = (args, env) => {
+interpretate(args[1], env);
+}
+
+core.Set.update = core.Set
+
+core.SetDelayed = async (args, env) => {
+//just copy Set without intepreteate()
+
+} 
+
+core.Length = async (args, env) => {
+const l = (await interpretate(args[0], {...env, novirtual:true})).length;
+
+//console.log('length: '+l);
+return l;
+}
+
+//todo needs so more optimizations!!!
+//do not evlaute the whole stuff
+core.Part = async (args, env) => {
+  const p = await interpretate(args[1], env);
+  const data = await interpretate(args[0], {...env});
+  if (Array.isArray(p)) {
+    return p.map((e) => data[e-1]);
+  } else {
+    return data[p-1];
+  }
+}  
+
+core.Part.update = core.Part;
+core.Part.destroy = async (args, env) => {
+  const p = await interpretate(args[1], env);
+  const data = await interpretate(args[0], {...env})
+} 
+
+core.JSObject = async (args, env) => {
+  return args[0];
+}
+
+core.JSObject.update = core.JSObject;
+core.JSObject.destroy = core.JSObject;
+
+core.FrontUpdateSymbol = (args, env) => {
+const name = interpretate(args[0], env);
+console.log("update");
+//update
+core[name].data = args[1];
+
+//console.log('instance list');
+//console.log(core[name].instances);
+
+for (const inst of Object.values(core[name].instances)) {
+inst.update();
+};    
+}
+
+/*core.RGBColor =  async (args, env) => {
+const color = [];
+for (const col of args) {
+color.push(await interpretate(col, env));
+}
+
+color.unshift('RGBColor');
+console.log('color:' + JSON.stringify(color));
+return color;
+
+return new UnevaluedSymbl() aka JS object
+}*/
+
+core.Flatten = async (args, env) => {
+//always reset hold if it is there, that it wont propagate
+const result = (await interpretate(args[0], {...env, hold:false})).flat(Infinity);
+//if (env.hold) return ['JSObject', result];
+return result;
+}
+
+core.Partition = async (args, env) => {
+const perChunk = await interpretate(args[1], {...env, hold:false});
+const inputArray = await interpretate(args[0], {...env, hold:false});
+
+const result = inputArray.reduce((resultArray, item, index) => { 
+const chunkIndex = Math.floor(index/perChunk)
+
+if(!resultArray[chunkIndex]) {
+resultArray[chunkIndex] = [] // start a new chunk
+}
+
+resultArray[chunkIndex].push(item)
+
+return resultArray
+}, []);
+
+
+//if (env.hold) return ['JSObject', result];
+return result;
+}  
+
+core.HoldFirstLevel = async (args, env) => {
+return await interpretate(args[0], {...env, hold:true});
+} 
+
+core.CheckLatencyToHost = async (args, env) => {
+let start = performance.now();
+let r = await server.askKernel('Table[i, {i, 100000}];');
+let stop = performance.now();
+
+const empty = stop - start;
+
+start = performance.now();
+r = await server.askKernel('Table[i, {i, 100000}]');
+stop = performance.now();
+
+const withData = 800200/(stop - start);
+
+return `Latency: ${empty} ms, with payload: ${withData} bytes / ms`;    
+}
+
+core.Benchmark = async (args, env) => {
+let host = await server.askKernel('Table[Sqrt[Sin[i]], {i, 0.0, 100000.0}] // RepeatedTiming // First');
+
+let start, stop;
+let front = [];
+
+for (let i=0; i<10; ++i) {
+start = performance.now();
+await interpretate(['Table', ['Sqrt', ['Sin', 'i']], ['List', 'i', 0.0, 100000.0]], env);
+stop = performance.now();
+
+front.push((stop - start)/1000);
+}
+
+const average = host/(front.reduce((a, b) => a + b, 0) / front.length);
+const max = host/Math.max(...front);
+
+return `Average frontend speed ${average} with the slowest ${max}`;    
+}  
+
+core.With = async (args, env) => {
+const params = await interpretate(args[0], {...env, hold:true});
+
+//console.log(JSON.stringify(params));
+
+let scope;
+if (env.scope) scope = {...env.scope}; else scope = {};
+
+const copy = {...env, scope: scope};
+for (const p of params) {
+const r = await interpretate(p[2], env);
+copy.scope[p[1]] = () => r;
+}
+
+return await interpretate(args[1], copy);
+} 
+
+core.With.update = core.With
+
+core.With.destroy = (args, env) => {
+//destroy params
+interpretate(args[0], env);
+
+//destory args
+interpretate(args[1], env);
+}
+
+core.Map = async (args, env) => {
+const func = args[0];
+const array = await interpretate(args[1], {...env, hold:false}); 
+
+
+const result = [];
+
+for (const el of array) {
+result.push(await interpretate([func, ['JSObject', el]], {...env, hold:false}));
+}
+
+//if (env.hold) return ["JSObject", result];
+return result;
+}
+
+core.White = (args, env) => {
+return interpretate(['RGBColor', 1, 1, 1], env);
+}
+
+core.LightBlue = (args, env) => {
+return interpretate(['RGBColor', 0.87, 0.94, 1], env);
+}
+
+core.Brown = (args, env) => {
+return interpretate(['RGBColor', 0.6, 0.4, 0.2], env);
+}
+
+core.Sqrt = async (args, env) => {
+return Math.sqrt(await interpretate(args[0], env));
+}
+
+core.Sqrt.update = core.Sqrt
+core.Sqrt.destroy = core.Sqrt
+
+core.Rule = async (args, env) => {
+const key = await interpretate(args[0], env);
+const val = await interpretate(args[1], env)
+if (env.Association) {
+env.Association[key] = val;
+return;
+} else {
+return {key: val};
+}
+}
+
+core.Pi = () => Math.PI
+core.Pi.update = () => Math.PI
+
+window.core = core;
+
+
+            </script>
+         
+            <script>
+            //helps to find instance from server
+var MetaMarkers = {};
+
+core.MetaMarker = async (args, env) => {
+  if (env.hold) {
+    console.log('Held meta-marker expression!');
+    return ["MetaMarker", ...args];
+  }
+
+  const marker = await interpretate(args[0], env);
+  const inst = env.root.instance;
+
+  console.log('instance '+inst+'is marked as '+marker);
+  if (marker in MetaMarkers) {
+    MetaMarkers[marker][inst] = env;
+  } else {
+    MetaMarkers[marker] = {};
+    MetaMarkers[marker][inst] = env;
+  }
+
+  return null;
+}
+
+core.MetaMarker.update = (args, env) => {
+  //void
+}
+
+core.MetaMarker.destroy = async (args, env) => {
+  const marker = await interpretate(args[0], env);
+  console.log('dispose marker for instance '+env.root.instance);
+  //console.log('in the context');
+  //console.log(env);
+  //console.log(MetaMarkers[marker]);
+
+  delete MetaMarkers[marker][env.root.instance];
+}  
+
+core.FindMetaMarker = async (args, env) => {
+  const marker = await interpretate(args[0], env);
+
+  if (marker in MetaMarkers) {
+    console.log('found one!');
+    const arr =  Object.values(MetaMarkers[marker]);
+    const list = arr.map((el)=>{
+      return ['MetaMarkers', el]
+    });
+
+    //console.log('list of markers');
+    //console.log(list);
+
+    return list;
+  }
+
+  return null;
+}
+
+core.FrontSubmit = async (args, env) => {
+  if (args.length < 2) {
+    console.log('FrontSubmit cannot be evaluated on the frontend with only 1 argument!');
+    throw 'FrontSubmit cannot be evaluated on the frontend with only 1 argument!';
+  }
+
+  const expr = args[0];
+
+  //CORRENTLY SUPPORTS ONLY METAMARKER OBJECTS
+  const marker = await interpretate(args[1], {...env, hold:true});
+
+  if (marker[0] !== 'MetaMarker') {
+    throw 'FrontSubmit cannot be evaluated on the frontend with only MetaMarker as a second argument';
+  }
+
+  const uid = await interpretate(marker[1], env);
+  const results = [];
+
+  if (uid in MetaMarkers) {
+    console.log('found one! ');
+    const arr =  Object.values(MetaMarkers[uid]);
+    
+    for (const instance of arr) {
+      //execute inside the container
+      console.log('try!');
+      //console.log(instanceEnv);
+      const copy = {...instance};
+
+      //merge the scope
+      copy.scope = {...copy.scope, ...env.scope};
+
+      const result = await interpretate(expr, copy);
+      results.push(result);
+    }
+  }  
+
+  return results;
+}
+
+const contrainersBox = {};
+
+core.DeleteExecutablesBox = async (args, env) => {
+  let containersBoxIDs =  await interpretate(args[0], env);
+  if (!containersBoxIDs.length) containersBoxIDs = [containersBoxIDs];
+
+  containersBoxIDs.forEach((e) => {
+    console.log("disposing object...");
+    e.dispose();
+  })
+  //somehow remove them
+}
+
+//a much more complicated version, where you are using object to return
+core.FrontSubmitExtended = async (args, env) => {
+  if (args.length < 3) {
+    console.log('FrontSubmitExtended cannot be evaluated on the frontend with only 2 argument!');
+    throw 'FrontSubmitExtended cannot be evaluated on the frontend with only 2 argument!';
+  }
+
+  const expr = args[0];
+
+  //where this thing will be placed
+  //to omitt communication between WLJS and WL
+  const containersBoxID =  await interpretate(args[2], env);
+
+  const Box = [];
+
+  //CORRENTLY SUPPORTS ONLY METAMARKER OBJECTS
+  const marker = await interpretate(args[1], {...env, hold:true});
+
+  if (marker[0] !== 'MetaMarker') {
+    throw 'FrontSubmit cannot be evaluated on the frontend with only MetaMarker as a second argument';
+  }
+
+  const uid = await interpretate(marker[1], env);
+  const results = [];
+
+  if (uid in MetaMarkers) {
+    console.log('found one! ');
+    const arr =  Object.values(MetaMarkers[uid]);
+    
+    for (const instance of arr) {
+      //execute inside the container
+      console.log('try!');
+      //console.log(instanceEnv);
+      const copy = {...instance};
+
+      //merge the scope
+      copy.scope = {...copy.scope, ...env.scope};
+      if (!copy.global.hooks) copy.global.hooks = [];
+      copy.global.hooks.push((obj)=>{
+        Box.push(obj);
+      });
+
+      const result = await interpretate(expr, copy);
+
+      results.push(result);
+    }
+  }  
+
+  contrainersBox[containersBoxID] = Box;
+  return results;
+}
+
+core.FrontSubmitAlias = core.FrontSubmit
+
+core.First = async (args, env) => {
+  const dt = await interpretate(args[0], env);
+  return dt[0];
+}
+
+//to execute code inside the container (injecting)
+core.Placed = async (args, env) => {
+  //console.log(args[1]);
+  console.warn('Method Placed is depricated!');
+
+  let evaluated = await interpretate(args[1], env);
+
+  if (core._typeof(evaluated) != 'MetaMarkers') {
+    evaluated = await interpretate(args[1], env);
+    //console.log(evaluated);
+
+    if (core._typeof(evaluated) != 'MetaMarkers') {
+
+      console.error('cannot place as defined');
+      console.log(args);
+
+      return null;
+    }
+  }
+
+  const instanceEnv = evaluated[1];
+  
+  
+  
+  //execute inside the container
+  console.log('try!');
+  //console.log(instanceEnv);
+  const copy = {...instanceEnv};
+  copy.scope = {...copy.scope, ...env.scope};
+
+  await interpretate(args[0], copy);
+  //console.log('done!');
+  return null;
+}
+
+            </script>
+         
+            <script>
+            core._NotebookUI = true; // detect if you run it on WLJS Frontend
+interpretate.throttle = 40;
+            </script>
+        
+ 
+        <!-- frontend library (module) -->
+        <script type="module">
+            const bundleloaded = new Event("bundleloaded");
+window.dispatchEvent(bundleloaded);
+
+        </script>
+        
+        <!-- user's plugins (module) -->
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-cells@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-editor@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-editor@master/src/boxes.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/KirillBelovTest/wljs-chatbook-support@master/src/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-dev-tools@master/src/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-graphics-d3@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-html-support@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-hydrator@master/src/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-inputs@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-js-support@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-magic-support@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-markdown-support@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-mermaid-support@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-plotly@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-wlx-support@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-revealjs@master/dist/kernel.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-snippets@master/src/kernel.js"></script>
+         
+
+        <!-- connection to the server (global) -->
+
+        <!-- editors autocomplete -->
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-interpreter@master/src/autocomplete.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-editor@master/src/autocomplete.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@master/src/autocomplete.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-graphics-d3@master/src/autocomplete.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-hydrator@master/src/autocomplete.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-inputs@master/src/autocomplete.js"></script>
+         
+            <script type="module" src="https://cdn.jsdelivr.net/gh/JerryI/wljs-plotly@master/src/autocomplete.js"></script>
+                  
+    </head>
+    <body class="notion-body">
+        <div id="notion-app">
+            <div class="notion-app-inner notion-light-theme" style="">
+                <div style="">
+                    <div class="notion-cursor-listener" style="">
+                        <div class="" style="">
+
+                                
+                         
+        <div class="notion-frame notion-frame-extended" style="">
+            <main id="frontend-editor" aria-hidden="true" class="main-container styles-container-editor">
+
+                <div id="frontend-editor-content" class="group-container" aria-hidden="true">
+                    <div role="textbox" style="padding-bottom:50em;" aria-multiline="true" spellcheck="true" id="unshod-d392a" data-slate-editor="true" data-slate-editor-id="0" data-slate-node="value" zindex="-1">
+
+                    
+        
+                    </div>
+                </div>
+            </main>
+
+
+        </div>
+                        </div>
+
+                        
+                        
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
+        
+    
+<script type="module">
+    
+        { let ob =  new ObjectStorage('4c927ca0-0ddb-4410-a49a-66693942bfad'); ob.cached = true; ob.cache = ["Graphics3D",["List",["List",["RGBColor",1,0,0],["List",["Polygon",["List",["List",-0.2949437484235808,0.9077435189160141,1.2494017678608846],["List",0.0,0.0,0.9510565162951535],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",-0.2949437484235808,0.9077435189160141,1.2494017678608846],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994],["List",-0.6881909602355868,0.5,0.42532540417601994]]],["Polygon",["List",["List",-0.2949437484235808,0.9077435189160141,1.2494017678608846],["List",-0.6881909602355868,0.5,0.42532540417601994],["List",0.0,0.0,0.9510565162951535]]],["Polygon",["List",["List",-0.9544580194373077,0.0,1.2494017678608846],["List",0.0,0.0,0.9510565162951535],["List",-0.6881909602355868,0.5,0.42532540417601994]]],["Polygon",["List",["List",-0.9544580194373077,0.0,1.2494017678608846],["List",-0.6881909602355868,0.5,0.42532540417601994],["List",-0.6881909602355868,-0.5,0.42532540417601994]]],["Polygon",["List",["List",-0.9544580194373077,0.0,1.2494017678608846],["List",-0.6881909602355868,-0.5,0.42532540417601994],["List",0.0,0.0,0.9510565162951535]]],["Polygon",["List",["List",-0.2949437484235808,-0.9077435189160142,1.2494017678608846],["List",0.0,0.0,0.9510565162951535],["List",-0.6881909602355868,-0.5,0.42532540417601994]]],["Polygon",["List",["List",-0.2949437484235808,-0.9077435189160142,1.2494017678608846],["List",-0.6881909602355868,-0.5,0.42532540417601994],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",-0.2949437484235808,-0.9077435189160142,1.2494017678608846],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994],["List",0.0,0.0,0.9510565162951535]]],["Polygon",["List",["List",0.7721727581422327,-0.5610163477575301,1.2494017678608846],["List",0.0,0.0,0.9510565162951535],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",0.7721727581422327,-0.5610163477575301,1.2494017678608846],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994],["List",0.8506508083520399,0.0,0.42532540417601994]]],["Polygon",["List",["List",0.7721727581422327,-0.5610163477575301,1.2494017678608846],["List",0.8506508083520399,0.0,0.42532540417601994],["List",0.0,0.0,0.9510565162951535]]],["Polygon",["List",["List",0.7721727581422327,0.5610163477575297,1.2494017678608846],["List",0.0,0.0,0.9510565162951535],["List",0.8506508083520399,0.0,0.42532540417601994]]],["Polygon",["List",["List",0.7721727581422327,0.5610163477575297,1.2494017678608846],["List",0.8506508083520399,0.0,0.42532540417601994],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",0.7721727581422327,0.5610163477575297,1.2494017678608846],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994],["List",0.0,0.0,0.9510565162951535]]],["Polygon",["List",["List",0.2949437484235808,-0.9077435189160142,-1.2494017678608846],["List",0.6881909602355868,-0.5,-0.42532540417602],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",0.2949437484235808,-0.9077435189160142,-1.2494017678608846],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602],["List",0.0,0.0,-0.9510565162951535]]],["Polygon",["List",["List",0.2949437484235808,-0.9077435189160142,-1.2494017678608846],["List",0.0,0.0,-0.9510565162951535],["List",0.6881909602355868,-0.5,-0.42532540417602]]],["Polygon",["List",["List",0.9544580194373044,0.0,-1.2494017678608846],["List",0.6881909602355868,0.5,-0.42532540417602],["List",0.6881909602355868,-0.5,-0.42532540417602]]],["Polygon",["List",["List",0.9544580194373044,0.0,-1.2494017678608846],["List",0.6881909602355868,-0.5,-0.42532540417602],["List",0.0,0.0,-0.9510565162951535]]],["Polygon",["List",["List",0.9544580194373044,0.0,-1.2494017678608846],["List",0.0,0.0,-0.9510565162951535],["List",0.6881909602355868,0.5,-0.42532540417602]]],["Polygon",["List",["List",0.2949437484235808,0.9077435189160141,-1.2494017678608846],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602],["List",0.6881909602355868,0.5,-0.42532540417602]]],["Polygon",["List",["List",0.2949437484235808,0.9077435189160141,-1.2494017678608846],["List",0.6881909602355868,0.5,-0.42532540417602],["List",0.0,0.0,-0.9510565162951535]]],["Polygon",["List",["List",0.2949437484235808,0.9077435189160141,-1.2494017678608846],["List",0.0,0.0,-0.9510565162951535],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",-0.7721727581422327,0.5610163477575297,-1.2494017678608846],["List",-0.85065080835204,0.0,-0.42532540417602],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",-0.7721727581422327,0.5610163477575297,-1.2494017678608846],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602],["List",0.0,0.0,-0.9510565162951535]]],["Polygon",["List",["List",-0.7721727581422327,0.5610163477575297,-1.2494017678608846],["List",0.0,0.0,-0.9510565162951535],["List",-0.85065080835204,0.0,-0.42532540417602]]],["Polygon",["List",["List",-0.7721727581422327,-0.5610163477575301,-1.2494017678608846],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602],["List",-0.85065080835204,0.0,-0.42532540417602]]],["Polygon",["List",["List",-0.7721727581422327,-0.5610163477575301,-1.2494017678608846],["List",-0.85065080835204,0.0,-0.42532540417602],["List",0.0,0.0,-0.9510565162951535]]],["Polygon",["List",["List",-0.7721727581422327,-0.5610163477575301,-1.2494017678608846],["List",0.0,0.0,-0.9510565162951535],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",-0.4772290097186539,1.468759866673544,0.2949437484235808],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",-0.4772290097186539,1.468759866673544,0.2949437484235808],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602],["List",-0.6881909602355868,0.5,0.42532540417601994]]],["Polygon",["List",["List",-0.4772290097186539,1.468759866673544,0.2949437484235808],["List",-0.6881909602355868,0.5,0.42532540417601994],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",-1.5443455162844655,0.0,0.2949437484235808],["List",-0.6881909602355868,0.5,0.42532540417601994],["List",-0.85065080835204,0.0,-0.42532540417602]]],["Polygon",["List",["List",-1.5443455162844655,0.0,0.2949437484235808],["List",-0.85065080835204,0.0,-0.42532540417602],["List",-0.6881909602355868,-0.5,0.42532540417601994]]],["Polygon",["List",["List",-1.5443455162844655,0.0,0.2949437484235808],["List",-0.6881909602355868,-0.5,0.42532540417601994],["List",-0.6881909602355868,0.5,0.42532540417601994]]],["Polygon",["List",["List",-0.4772290097186539,-1.468759866673544,0.2949437484235808],["List",-0.6881909602355868,-0.5,0.42532540417601994],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",-0.4772290097186539,-1.468759866673544,0.2949437484235808],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",-0.4772290097186539,-1.468759866673544,0.2949437484235808],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994],["List",-0.6881909602355868,-0.5,0.42532540417601994]]],["Polygon",["List",["List",1.2494017678608846,-0.9077435189160142,0.2949437484235808],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994],["List",0.6881909602355868,-0.5,-0.42532540417602]]],["Polygon",["List",["List",1.2494017678608846,-0.9077435189160142,0.2949437484235808],["List",0.6881909602355868,-0.5,-0.42532540417602],["List",0.8506508083520399,0.0,0.42532540417601994]]],["Polygon",["List",["List",1.2494017678608846,-0.9077435189160142,0.2949437484235808],["List",0.8506508083520399,0.0,0.42532540417601994],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",1.2494017678608846,0.9077435189160141,0.2949437484235808],["List",0.8506508083520399,0.0,0.42532540417601994],["List",0.6881909602355868,0.5,-0.42532540417602]]],["Polygon",["List",["List",1.2494017678608846,0.9077435189160141,0.2949437484235808],["List",0.6881909602355868,0.5,-0.42532540417602],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",1.2494017678608846,0.9077435189160141,0.2949437484235808],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994],["List",0.8506508083520399,0.0,0.42532540417601994]]],["Polygon",["List",["List",0.47722900971865234,-1.468759866673544,-0.2949437484235808],["List",0.6881909602355868,-0.5,-0.42532540417602],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",0.47722900971865234,-1.468759866673544,-0.2949437484235808],["List",0.2628655560595668,-0.8090169943749475,0.42532540417601994],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",0.47722900971865234,-1.468759866673544,-0.2949437484235808],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602],["List",0.6881909602355868,-0.5,-0.42532540417602]]],["Polygon",["List",["List",1.5443455162844655,0.0,-0.2949437484235808],["List",0.6881909602355868,0.5,-0.42532540417602],["List",0.8506508083520399,0.0,0.42532540417601994]]],["Polygon",["List",["List",1.5443455162844655,0.0,-0.2949437484235808],["List",0.8506508083520399,0.0,0.42532540417601994],["List",0.6881909602355868,-0.5,-0.42532540417602]]],["Polygon",["List",["List",1.5443455162844655,0.0,-0.2949437484235808],["List",0.6881909602355868,-0.5,-0.42532540417602],["List",0.6881909602355868,0.5,-0.42532540417602]]],["Polygon",["List",["List",0.47722900971865234,1.468759866673544,-0.2949437484235808],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994]]],["Polygon",["List",["List",0.47722900971865234,1.468759866673544,-0.2949437484235808],["List",0.2628655560595668,0.8090169943749475,0.42532540417601994],["List",0.6881909602355868,0.5,-0.42532540417602]]],["Polygon",["List",["List",0.47722900971865234,1.468759866673544,-0.2949437484235808],["List",0.6881909602355868,0.5,-0.42532540417602],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",-1.2494017678608846,0.9077435189160141,-0.2949437484235808],["List",-0.85065080835204,0.0,-0.42532540417602],["List",-0.6881909602355868,0.5,0.42532540417601994]]],["Polygon",["List",["List",-1.2494017678608846,0.9077435189160141,-0.2949437484235808],["List",-0.6881909602355868,0.5,0.42532540417601994],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602]]],["Polygon",["List",["List",-1.2494017678608846,0.9077435189160141,-0.2949437484235808],["List",-0.2628655560595668,0.8090169943749475,-0.42532540417602],["List",-0.85065080835204,0.0,-0.42532540417602]]],["Polygon",["List",["List",-1.2494017678608846,-0.9077435189160142,-0.2949437484235808],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602],["List",-0.6881909602355868,-0.5,0.42532540417601994]]],["Polygon",["List",["List",-1.2494017678608846,-0.9077435189160142,-0.2949437484235808],["List",-0.6881909602355868,-0.5,0.42532540417601994],["List",-0.85065080835204,0.0,-0.42532540417602]]],["Polygon",["List",["List",-1.2494017678608846,-0.9077435189160142,-0.2949437484235808],["List",-0.85065080835204,0.0,-0.42532540417602],["List",-0.2628655560595668,-0.8090169943749475,-0.42532540417602]]]]]],["Rule","Boxed",false],["Rule","'RTX'",true],["Rule","'Lighting'","None"],["Rule","ImageSize",["List",500,400]],["Rule","'ViewProjection'","'Perspective'"],["Rule","'Lightmap'","'https:\/\/raw.githubusercontent.com\/JerryI\/Mathematica-ThreeJS-graphics-engine\/master\/assets\/PureSky.hdr'"]]; };
+    
+        ;
+    
+    
+
+    
+        {let global = {};
+        const env = {local:{}, global:global};
+        await interpretate(["FrontEndCreateCell","'<section class=\"cell-wrapper frontend-node\"  style=\"opacity: 1;\">\n    <div class=\"tool-wrapper node-settings-actions frontend-tools tools-right\" contenteditable=\"false\">     \n            <div class=\"tool-div\">\n                <button class=\"btn node-settings-removeoutput\" type=\"button\" contenteditable=\"false\">\n                    <svg viewBox=\"0 1 18 18\" style=\"width: 22px; height: 22px; color: rgba(55, 53, 47, 0.3);\" fill=\"none\" xmlns=\"http:\/\/www.w3.org\/2000\/svg\">\n                        <path d=\"M 14 6 l -8 8 M 14 14 l -8 -8\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path>\n                    <\/svg>\n                <\/button> \n                <button class=\"btn node-settings-initgroup\" type=\"button\" contenteditable=\"false\">\n                    <span style=\"font-size: 14px;color: rgba(119, 119, 119, 0.5);white-space: nowrap;line-height: 1;width: 1em;text-align: center;\/*! background: white; *\/font-weight: 800;\">i<\/span>\n                <\/button> \n                <button class=\"btn node-settings-project\" type=\"button\" contenteditable=\"false\"> \n                <svg version=\"1.1\" xmlns=\"http:\/\/www.w3.org\/2000\/svg\" xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 31.5 33.3\" style=\"enable-background:new 0 0 31.5 33.3;width: 17px;opacity: 0.2;stroke-width: 2.5;stroke-linecap: round;stroke-linejoin: miter;padding-left: 0.1em;padding-right: 0.1em;\" xml:space=\"preserve\" stroke=\"black\">\n<path d=\"M4.2,1.9c-0.3,0-0.6,0.3-0.6,0.7v28.4c0,0.4,0.3,0.7,0.7,0.7c0.1,0,0.2,0,0.3-0.1l4.8-2.1v1.5c0,0.4,0.3,0.7,0.7,0.7\n\tc0.1,0,0.2,0,0.2,0l5.2-2.1v1.5c0,0.4,0.3,0.7,0.7,0.7c0.1,0,0.2,0,0.2,0l11.8-4.7c0.3-0.1,0.4-0.3,0.4-0.6V7.3\n\tc0-0.3-0.2-0.5-0.4-0.6L16.3,1.9c-0.1,0-0.2-0.1-0.3,0c-0.3,0-0.6,0.3-0.6,0.7V4l-5.2-2.1c-0.1,0-0.2-0.1-0.3,0\n\tc-0.3,0-0.6,0.3-0.6,0.7V4L4.5,1.9C4.4,1.9,4.3,1.9,4.2,1.9L4.2,1.9z M16.8,3.5l10.5,4.2v18l-10.5,4.2V3.5z M10.7,3.5l4.7,2V28\n\tl-4.7,2V14.7c0-0.4-0.3-0.7-0.7-0.7c0,0-0.1,0-0.1,0c-0.3,0-0.6,0.3-0.6,0.7V28l-4.4,1.9V3.6l4.4,1.9V12c0,0.4,0.3,0.7,0.7,0.7\n\tc0.4,0,0.7-0.3,0.7-0.7c0,0,0,0,0,0V3.5z\"><\/path>\n<\/svg> <\/button>\n                <button class=\"btn node-settings-play\" type=\"button\" contenteditable=\"false\">\n                    <svg viewBox=\"0 1 14 14\" aria-hidden=\"true\" fill=\"currentColor\" xmlns=\"http:\/\/www.w3.org\/2000\/svg\" class=\"drag_svg__StyledIconBase-ea9ulj-0 drag_svg__iuNRof\" style=\"width: 15px; height: 15px; color: rgba(55, 53, 47, 0.3);\">\n                        <path d=\"M4 12.4788V3.52116C4 2.23802 5.50646 1.54723 6.47878 2.38451L11.68 6.86335C12.375 7.46178 12.375 8.53822 11.68 9.13665L6.47878 13.6155C5.50646 14.4528 4 13.762 4 12.4788Z\"><\/path>\n                    <\/svg>\n                <\/button>                \n            <\/div>            \n<\/div>\n<div class=\"tool-wrapper node-settings-actions frontend-tools\" contenteditable=\"false\">\n        <div>\n            <div class=\"tool-div\">\n                <button type=\"button\" contenteditable=\"false\" class=\"btn node-settings-add\">\n                    <svg viewBox=\"0 0 20 20\" style=\"width: 20px; height: 18px;\" fill=\"none\" xmlns=\"http:\/\/www.w3.org\/2000\/svg\">\n                        <path d=\"M10 3v14M17 10H3\" stroke=\"gray\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path>\n                    <\/svg>\n                <\/button>\n                <button class=\"btn node-settings-hide\" type=\"button\" contenteditable=\"false\">\n                    <svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" class=\"icon-hidden\" fill=\"currentColor\" xmlns=\"http:\/\/www.w3.org\/2000\/svg\" class=\"drag_svg__StyledIconBase-ea9ulj-0 drag_svg__iuNRof\" style=\"width: 18px; height: 18px; color: rgba(55, 53, 47, 0.3);\">\n                        <path style=\"transform: scale(2.0);\" d=\"M6.02734 8.80274C6.27148 8.80274 6.47168 8.71484 6.66211 8.51465L10.2803 4.82324C10.4268 4.67676 10.5 4.49609 10.5 4.28125C10.5 3.85156 10.1484 3.5 9.72363 3.5C9.50879 3.5 9.30859 3.58789 9.15234 3.74902L6.03223 6.9668L2.90722 3.74902C2.74609 3.58789 2.55078 3.5 2.33105 3.5C1.90137 3.5 1.55469 3.85156 1.55469 4.28125C1.55469 4.49609 1.62793 4.67676 1.77441 4.82324L5.39258 8.51465C5.58789 8.71973 5.78808 8.80274 6.02734 8.80274Z\"><\/path>\n                   <\/svg>\n                <\/button>\n            <\/div>\n        <\/div>\n<\/div>  \n\n    <div class=\"content-wrapper\" id=\"8730da8b-31a0-40c6-921a-edfde506b307\">\n        \n            <p class=\"cell-paragraph frontend-paragraph  cell-hidden \" draggable=\"false\" id=\"8730da8b-31a0-40c6-921a-edfde506b307---input\"><\/p>\n            <div class=\"loader-line loader-line-idle\"><\/div>\n            <hr id=\"8730da8b-31a0-40c6-921a-edfde506b307---delim\"\/>\n        \n        \n    <\/div>\n<\/section>'",["Association",["Rule","'id'","'8730da8b-31a0-40c6-921a-edfde506b307'"],["Rule","'sign'","'unshod-d392a'"],["Rule","'type'","'input'"],["Rule","'data'","'Graphics3D[{{Red, N@PolyhedronData[\"Spikey\", \"Polygons\"]}}, \n  Boxed->False,\"RTX\"->True,\"Lighting\"->None,ImageSize->{500, 400},\"ViewProjection\"->\"Perspective\", \n  \"Lightmap\"->\"https:\/\/raw.githubusercontent.com\/JerryI\/Mathematica-ThreeJS-graphics-engine\/master\/assets\/PureSky.hdr\"\n]'"],["Rule","'child'","'child'"],["Rule","'parent'","'parent'"],["Rule","'next'","'next'"],["Rule","'prev'","'prev'"],["Rule","'props'",["Association",["Rule","'hidden'",true]]],["Rule","'display'","'codemirror'"],["Rule","'state'","'idle'"]]], env);}
+    
+        {let global = {};
+        const env = {local:{}, global:global};
+        await interpretate(["FrontEndCreateCell","'<div>    \n    <p class=\"cell-paragraph frontend-paragraph output-cell\" draggable=\"false\" id=\"cec94b0b-e5cb-473e-a275-b01384f9e446---output\"><\/p>\n    <hr id=\"cec94b0b-e5cb-473e-a275-b01384f9e446---delim\">\n<\/div>\n\n'",["Association",["Rule","'id'","'cec94b0b-e5cb-473e-a275-b01384f9e446'"],["Rule","'sign'","'unshod-d392a'"],["Rule","'type'","'output'"],["Rule","'data'","'FrontEndExecutable[\"4c927ca0-0ddb-4410-a49a-66693942bfad\"]'"],["Rule","'child'","'child'"],["Rule","'parent'","'parent'"],["Rule","'next'","'next'"],["Rule","'prev'","'prev'"],["Rule","'props'",["Association",["Rule","'hidden'",false]]],["Rule","'display'","'codemirror'"],["Rule","'state'","'idle'"]]], env);}
+    
+</script>
+
+
+</body></html>        
